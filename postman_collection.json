@@ -1,0 +1,1774 @@
+{
+	"info": {
+		"_postman_id": "fa970304-0397-481a-ac1d-f6dcbb9cfc10",
+		"name": "FlyNext API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41533479",
+		"_collection_link": "https://restless-moon-948967-6227.postman.co/workspace/ee4b7b0a-c417-4771-a8bc-4dc328c3ebe5/collection/42829774-fa970304-0397-481a-ac1d-f6dcbb9cfc10?action=share&source=collection_link&creator=41533479"
+	},
+	"item": [
+		{
+			"name": "hotels",
+			"item": [
+				{
+					"name": "owner",
+					"item": [
+						{
+							"name": "room-type",
+							"item": [
+								{
+									"name": "Create",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "x-user-id",
+												"value": "1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"hotel_id\": 1,\r\n    \"name\": \"Single\",\r\n    \"price_per_night\": 10.99,\r\n    \"amenities\": [\"gym\", \"tissue box\"],\r\n    \"room_count\": 50\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/owner/room-type",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"owner",
+												"room-type"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Retrieve",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "",
+												"value": "",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/owner/room-type?hotel_id=1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"owner",
+												"room-type"
+											],
+											"query": [
+												{
+													"key": "hotel_id",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update",
+									"request": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"hotel_id\": 1,\r\n    \"room_type_id\": 1,\r\n    \"name\": \"Double\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/owner/room-type",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"owner",
+												"room-type"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "reservations",
+							"item": [
+								{
+									"name": "Retrieve reservations",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/owner/reservations?hotel_id=1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"owner",
+												"reservations"
+											],
+											"query": [
+												{
+													"key": "hotel_id",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Retrieve reservations",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "/api/hotels/owner/reservations?hotel_id=1",
+													"path": [
+														"api",
+														"hotels",
+														"owner",
+														"reservations"
+													],
+													"query": [
+														{
+															"key": "hotel_id",
+															"value": "1"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "vary",
+													"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+												},
+												{
+													"key": "content-type",
+													"value": "application/json"
+												},
+												{
+													"key": "Date",
+													"value": "Sat, 08 Mar 2025 19:41:28 GMT"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "Keep-Alive",
+													"value": "timeout=5"
+												},
+												{
+													"key": "Transfer-Encoding",
+													"value": "chunked"
+												}
+											],
+											"cookie": [],
+											"body": "[\n    {\n        \"id\": 1,\n        \"check_in_time\": \"2025-03-15T00:00:00.000Z\",\n        \"check_out_time\": \"2025-03-20T00:00:00.000Z\",\n        \"is_cancelled\": true,\n        \"is_paid\": true,\n        \"hotelId\": 1,\n        \"hotelRoomTypeId\": 1,\n        \"userId\": 1,\n        \"tripItineraryId\": null\n    },\n    {\n        \"id\": 2,\n        \"check_in_time\": \"2025-03-21T00:00:00.000Z\",\n        \"check_out_time\": \"2025-03-25T00:00:00.000Z\",\n        \"is_cancelled\": false,\n        \"is_paid\": false,\n        \"hotelId\": 1,\n        \"hotelRoomTypeId\": 1,\n        \"userId\": 1,\n        \"tripItineraryId\": null\n    }\n]"
+										}
+									]
+								},
+								{
+									"name": "Update reservation",
+									"request": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"reservation_id\": 3,\r\n    \"is_cancelled\": \"true\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/owner/reservations",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"owner",
+												"reservations"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Update reservation",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n    \"reservation_id\": 3,\r\n    \"is_cancelled\": \"true\"\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "/api/hotels/owner/reservations",
+													"path": [
+														"api",
+														"hotels",
+														"owner",
+														"reservations"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "vary",
+													"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+												},
+												{
+													"key": "content-type",
+													"value": "application/json"
+												},
+												{
+													"key": "Date",
+													"value": "Sat, 08 Mar 2025 23:47:54 GMT"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "Keep-Alive",
+													"value": "timeout=5"
+												},
+												{
+													"key": "Transfer-Encoding",
+													"value": "chunked"
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"id\": 3,\n    \"check_in_time\": \"2025-03-21T00:00:00.000Z\",\n    \"check_out_time\": \"2025-03-25T00:00:00.000Z\",\n    \"is_cancelled\": true,\n    \"is_paid\": false,\n    \"hotelId\": 1,\n    \"hotelRoomTypeId\": 1,\n    \"userId\": 1,\n    \"tripItineraryId\": null,\n    \"reserver\": {\n        \"id\": 1,\n        \"password\": \"$2b$10$aGXjWEK3uL3weNsBJbV7pOuTIOrMr9vKSsdN3qa.Sem9iLztKY5hy\",\n        \"first_name\": \"John\",\n        \"last_name\": \"Doe\",\n        \"email\": \"user@example.com\",\n        \"phone_number\": \"9059059055\",\n        \"profileImage\": null\n    }\n}"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Retrieve hotels",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels/owner/",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels",
+										"owner",
+										""
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Retrieve hotels",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "/api/hotels/owner/",
+											"path": [
+												"api",
+												"hotels",
+												"owner",
+												""
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "vary",
+											"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+										},
+										{
+											"key": "content-type",
+											"value": "application/json"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 08 Mar 2025 20:05:44 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "[\n    {\n        \"id\": 1,\n        \"name\": \"Ocean View Resort\",\n        \"address\": \"123 Coastal Drive, Seaside, CA 94044\",\n        \"city\": \"Seaside\",\n        \"country\": \"United States\",\n        \"star_rating\": 4,\n        \"ownerId\": 1,\n        \"description\": \"A luxurious beachfront resort offering stunning ocean views and top-tier amenities for a relaxing getaway.\",\n        \"logo\": null,\n        \"website\": \"https://www.oceanviewresort.com\",\n        \"contact_email\": \"info@oceanviewresort.com\",\n        \"contact_phone\": \"9059059055\",\n        \"amenities\": \"[\\\"Swimming Pool\\\",\\\"Spa\\\",\\\"Restaurant\\\",\\\"Free Wi-Fi\\\",\\\"Fitness Center\\\"]\",\n        \"gallery_count\": 0\n    },\n    {\n        \"id\": 3,\n        \"name\": \"Ocean View Resort\",\n        \"address\": \"123 Coastal Drive, Seaside, CA 94044\",\n        \"city\": \"Seaside\",\n        \"country\": \"United States\",\n        \"star_rating\": 4,\n        \"ownerId\": 1,\n        \"description\": \"A luxurious beachfront resort offering stunning ocean views and top-tier amenities for a relaxing getaway.\",\n        \"logo\": null,\n        \"website\": \"https://www.oceanviewresort.com\",\n        \"contact_email\": \"info@oceanviewresort.com\",\n        \"contact_phone\": \"9059059055\",\n        \"amenities\": \"[\\\"Swimming Pool\\\",\\\"Spa\\\",\\\"Restaurant\\\",\\\"Free Wi-Fi\\\",\\\"Fitness Center\\\"]\",\n        \"gallery_count\": 0\n    }\n]"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "public",
+					"item": [
+						{
+							"name": "Create",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Ocean View Resort\",\r\n    \"address\": \"123 Coastal Drive, Seaside, CA 94044\",\r\n    \"country\": \"United States\",\r\n    \"city\": \"Seaside\",\r\n    \"star_rating\": 4,\r\n    \"description\": \"A luxurious beachfront resort offering stunning ocean views and top-tier amenities for a relaxing getaway.\",\r\n    \"website\": \"https://www.oceanviewresort.com\",\r\n    \"contact_email\": \"info@oceanviewresort.com\",\r\n    \"contact_phone\": \"9059059055\",\r\n    \"amenities\": [\"Swimming Pool\", \"Spa\", \"Restaurant\", \"Free Wi-Fi\", \"Fitness Center\"]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Create",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"name\": \"Ocean View Resort\",\r\n    \"address\": \"123 Coastal Drive, Seaside, CA 94044\",\r\n    \"country\": \"United States\",\r\n    \"city\": \"Seaside\",\r\n    \"star_rating\": 4,\r\n    \"description\": \"A luxurious beachfront resort offering stunning ocean views and top-tier amenities for a relaxing getaway.\",\r\n    \"website\": \"https://www.oceanviewresort.com\",\r\n    \"contact_email\": \"info@oceanviewresort.com\",\r\n    \"contact_phone\": \"9059059055\",\r\n    \"amenities\": [\"Swimming Pool\", \"Spa\", \"Restaurant\", \"Free Wi-Fi\", \"Fitness Center\"]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "/api/hotels",
+											"path": [
+												"api",
+												"hotels"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "vary",
+											"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+										},
+										{
+											"key": "content-type",
+											"value": "application/json"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 08 Mar 2025 20:00:40 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"message\": \"Hotel created successfully\",\n    \"hotel\": {\n        \"id\": 3,\n        \"name\": \"Ocean View Resort\",\n        \"address\": \"123 Coastal Drive, Seaside, CA 94044\",\n        \"city\": \"Seaside\",\n        \"country\": \"United States\",\n        \"star_rating\": 4,\n        \"ownerId\": 1,\n        \"description\": \"A luxurious beachfront resort offering stunning ocean views and top-tier amenities for a relaxing getaway.\",\n        \"logo\": null,\n        \"website\": \"https://www.oceanviewresort.com\",\n        \"contact_email\": \"info@oceanviewresort.com\",\n        \"contact_phone\": \"9059059055\",\n        \"amenities\": \"[\\\"Swimming Pool\\\",\\\"Spa\\\",\\\"Restaurant\\\",\\\"Free Wi-Fi\\\",\\\"Fitness Center\\\"]\",\n        \"gallery_count\": 0\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Retrieve",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels/public?star_rating=4",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels",
+										"public"
+									],
+									"query": [
+										{
+											"key": "star_rating",
+											"value": "4"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Retrieve",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/public?star_rating=4",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"public"
+											],
+											"query": [
+												{
+													"key": "star_rating",
+													"value": "4"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "vary",
+											"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+										},
+										{
+											"key": "content-type",
+											"value": "application/json"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 08 Mar 2025 20:04:52 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"hotels\": [\n        {\n            \"id\": 1,\n            \"name\": \"Ocean View Resort\",\n            \"address\": \"123 Coastal Drive, Seaside, CA 94044\",\n            \"city\": \"Seaside\",\n            \"country\": \"United States\",\n            \"star_rating\": 4,\n            \"HotelRoomType\": [\n                {\n                    \"id\": 1,\n                    \"name\": \"Double\",\n                    \"price_per_night\": \"10.99\"\n                }\n            ]\n        }\n    ]\n}"
+								}
+							]
+						},
+						{
+							"name": "Create reservation",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"hotel_id\": 1,\r\n  \"room_type_id\": 1,\r\n  \"check_in_time\": \"2025-03-21\",\r\n  \"check_out_time\": \"2025-03-25\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels/public/reserve",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels",
+										"public",
+										"reserve"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Create reservation",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"hotel_id\": 1,\r\n  \"room_type_id\": 1,\r\n  \"check_in_time\": \"2025-03-21\",\r\n  \"check_out_time\": \"2025-03-25\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/public/reserve",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"public",
+												"reserve"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "vary",
+											"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+										},
+										{
+											"key": "content-type",
+											"value": "application/json"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 08 Mar 2025 23:46:37 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": 3,\n    \"check_in_time\": \"2025-03-21T00:00:00.000Z\",\n    \"check_out_time\": \"2025-03-25T00:00:00.000Z\",\n    \"is_cancelled\": false,\n    \"is_paid\": false,\n    \"hotelId\": 1,\n    \"hotelRoomTypeId\": 1,\n    \"userId\": 1,\n    \"tripItineraryId\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "Get reservations",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels/public/reserve",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels",
+										"public",
+										"reserve"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Get reservations",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/hotels/public/reserve",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"hotels",
+												"public",
+												"reserve"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "vary",
+											"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+										},
+										{
+											"key": "content-type",
+											"value": "application/json"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 08 Mar 2025 23:48:25 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "[\n    {\n        \"id\": 3,\n        \"check_in_time\": \"2025-03-21T00:00:00.000Z\",\n        \"check_out_time\": \"2025-03-25T00:00:00.000Z\",\n        \"is_cancelled\": true,\n        \"is_paid\": false,\n        \"hotelId\": 1,\n        \"hotelRoomTypeId\": 1,\n        \"userId\": 1,\n        \"tripItineraryId\": null,\n        \"hotel\": {\n            \"id\": 1,\n            \"name\": \"Ocean View Resort\",\n            \"address\": \"123 Coastal Drive, Seaside, CA 94044\",\n            \"city\": \"Seaside\",\n            \"country\": \"United States\",\n            \"star_rating\": 4,\n            \"ownerId\": 1,\n            \"description\": \"A luxurious beachfront resort offering stunning ocean views and top-tier amenities for a relaxing getaway.\",\n            \"logo\": null,\n            \"website\": \"https://www.oceanviewresort.com\",\n            \"contact_email\": \"info@oceanviewresort.com\",\n            \"contact_phone\": \"9059059055\",\n            \"amenities\": \"[\\\"Swimming Pool\\\",\\\"Spa\\\",\\\"Restaurant\\\",\\\"Free Wi-Fi\\\",\\\"Fitness Center\\\"]\",\n            \"gallery_count\": 0\n        },\n        \"roomType\": {\n            \"id\": 1,\n            \"hotelId\": 1,\n            \"name\": \"Double\",\n            \"price_per_night\": \"10.99\",\n            \"amenities\": \"[\\\"gym\\\",\\\"tissue box\\\"]\",\n            \"room_count\": 50,\n            \"gallery_count\": 0\n        }\n    }\n]"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "user",
+					"item": [
+						{
+							"name": "notification",
+							"item": [
+								{
+									"name": "Get notifications",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/users/notifications",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users",
+												"notifications"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "New Request",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/notifications",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														"notifications"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "vary",
+													"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+												},
+												{
+													"key": "content-type",
+													"value": "application/json"
+												},
+												{
+													"key": "Date",
+													"value": "Sat, 08 Mar 2025 23:48:03 GMT"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "Keep-Alive",
+													"value": "timeout=5"
+												},
+												{
+													"key": "Transfer-Encoding",
+													"value": "chunked"
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"notifications\": [\n        {\n            \"id\": 2,\n            \"reservationId\": 3,\n            \"userId\": 1,\n            \"message\": \"Your reservation has been cancelled\",\n            \"created_at\": \"2025-03-08T23:47:54.882Z\",\n            \"is_read\": false,\n            \"type\": \"CANCELLATION\"\n        },\n        {\n            \"id\": 1,\n            \"reservationId\": 3,\n            \"userId\": 1,\n            \"message\": \"Reservation created\",\n            \"created_at\": \"2025-03-08T23:46:37.082Z\",\n            \"is_read\": true,\n            \"type\": \"BOOKING\"\n        }\n    ]\n}"
+										}
+									]
+								},
+								{
+									"name": "Mark notifications as read",
+									"request": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"notificationIds\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/users/notifications",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users",
+												"notifications"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "New Request",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n    \"notificationIds\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/users/notifications",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														"notifications"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "vary",
+													"value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"
+												},
+												{
+													"key": "content-type",
+													"value": "application/json"
+												},
+												{
+													"key": "Date",
+													"value": "Sat, 08 Mar 2025 23:47:07 GMT"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "Keep-Alive",
+													"value": "timeout=5"
+												},
+												{
+													"key": "Transfer-Encoding",
+													"value": "chunked"
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"success\": true,\n    \"message\": \"Notifications marked as read\"\n}"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "profile",
+							"item": [
+								{
+									"name": "Update User Profile",
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInRva2VuVHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NDE0ODIyNjIsImV4cCI6MTc0MjA4NzA2Mn0.6eiSy2h9LPtz-F9u0kWWDm4NmNMfKtIyrvMzo8xYvdQ",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"first_name\": \"Updated\",\r\n  \"last_name\": \"Name\",\r\n  \"phone_number\": \"987-654-3210\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/users/profile",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"users",
+												"profile"
+											]
+										},
+										"description": "Updates the logged-in user's profile information\n\n**Headers**: Authorization (Bearer token)\n\n**Request Body**: first_name, last_name, email, phone_number\n\n**Responses**:\n\n- 200: Profile updated successfully\n    \n- 400: Validation error\n    \n- 401: Unauthorized"
+									},
+									"response": []
+								},
+								{
+									"name": "Get User Profile",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{access_token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/users/profile",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"users",
+												"profile"
+											]
+										},
+										"description": "Retrieves the logged-in user's profile information\n\n**Headers**: Authorization (Bearer token)\n\n**Responses**:\n\n- 200: User profile data\n    \n- 401: Unauthorized"
+									},
+									"response": []
+								},
+								{
+									"name": "Add Profile Image",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{access_token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "image",
+													"type": "file",
+													"src": []
+												}
+											]
+										},
+										"url": {
+											"raw": "{{base_url}}/api/users/profile/image",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"users",
+												"profile",
+												"image"
+											]
+										},
+										"description": "Uploads a profile image for the logged-in user\n\n**Headers**: Authorization (Bearer token)\n\n**Request Body**: form-data with \"image\" field (max 2MB, JPEG/PNG)\n\n**Responses**:\n\n- 200: Image uploaded successfully\n    \n- 400: Invalid image\n    \n- 401: Unauthorized"
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "authentication",
+			"item": [
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"if (jsonData.accessToken) {\r",
+									"    pm.environment.set(\"access_token\", jsonData.accessToken);\r",
+									"}\r",
+									"if (jsonData.refreshToken) {\r",
+									"    pm.environment.set(\"refresh_token\", jsonData.refreshToken);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{test_email}}\",\r\n  \"password\": \"password123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						},
+						"description": "Authenticates a user and returns access tokens\n\n**Request Body**: email, password\n\n**Responses**:\n\n- 200: Authentication successful\n    \n- 400: Invalid credentials"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"if (jsonData.accessToken) {\r",
+									"    pm.environment.set(\"access_token\", jsonData.accessToken);\r",
+									"    console.log(\"Access token refreshed and saved\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"refreshToken\": \"{{refresh_token}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/refresh-token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"refresh-token"
+							]
+						},
+						"description": "Gets a new access token using a refresh token\n\n**Request Body**: refresh_token\n\n**Responses**:\n\n- 200: New access token generated\n    \n- 401: Invalid refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();\r",
+									"pm.environment.set(\"test_email\", `user_${timestamp}@example.com`);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{test_email}}\",\r\n  \"password\": \"password123\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						},
+						"description": "Creates a new user account\n\n**Request Body**: first_name, last_name, email, password, phone_number (optional)\n\n**Responses**:\n\n- 201: User created successfully\n    \n- 400: Validation error or email already exists"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hotel Management",
+			"item": [
+				{
+					"name": "Create Hotel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"// Extract hotel ID from nested response\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"console.log(\"Parsed JSON:\", jsonData);\r",
+									"\r",
+									"// The hotel object is nested under the 'hotel' property\r",
+									"if (jsonData.hotel && jsonData.hotel.id) {\r",
+									"    pm.environment.set(\"hotelId\", jsonData.hotel.id);\r",
+									"    console.log(\"Hotel ID saved:\", jsonData.hotel.id);\r",
+									"} else {\r",
+									"    console.error(\"Hotel ID not found in response. Response structure:\", JSON.stringify(jsonData));\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Grand Hotel\",\r\n  \"address\": \"123 Main St\",\r\n  \"city\": \"Toronto\",\r\n  \"country\": \"Canada\",\r\n  \"star_rating\": 4,\r\n  \"description\": \"A wonderful hotel in downtown\",\r\n  \"website\": \"http://grandhotel.example.com\",\r\n  \"contact_email\": \"info@grandhotel.example.com\",\r\n  \"contact_phone\": \"123-456-7890\",\r\n  \"amenities\": [\"WiFi\", \"Pool\", \"Parking\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "# Create Hotel\n\nCreates a new hotel with the authenticated user as the owner.\n\n## Headers\n- `Authorization` (required): Bearer token for authentication\n- `Content-Type` (required): application/json\n\n## Request Body\n- `name` (required): Hotel name\n- `address`: Physical address\n- `city`: City location\n- `country`: Country location\n- `star_rating`: Hotel rating (1-5)\n- `description`: Detailed description\n- `website`: Hotel website URL\n- `contact_email`: Contact email address\n- `contact_phone`: Contact phone number\n- `amenities`: Array of hotel amenities\n\n## Responses\n- 201: Hotel created successfully\n- 400: Validation error\n- 401: Unauthorized\n\n## Notes\nThe hotel ID is automatically saved to the `hotelId` environment variable for use in subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Hotel Logo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "logo",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/logo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"logo"
+							]
+						},
+						"description": "Uploads or replaces the logo image for a specific hotel.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n\n## Path Parameters\n\n- `hotelId`: ID of the hotel\n    \n\n## Request Body (form-data)\n\n- logo (required): Image file in JPEG, PNG, or WebP format (max 5MB)  \n    Note: The key name is case-sensitive\n    \n\n## Responses\n\n- 200: Image uploaded successfully\n    \n- 400: Bad request (invalid file type, size, or missing image)\n    \n- 401: Unauthorized\n    \n- 403: Not the hotel owner\n    \n- 404: Hotel not found\n    \n\n## Notes\n\nThe image will be resized and optimized automatically."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Hotel Gallery Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/gallery",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"gallery"
+							]
+						},
+						"description": "Adds an image to a hotel's gallery collection.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n\n## Path Parameters\n\n- `hotelId`: ID of the hotel\n    \n\n## Request Body (form-data)\n\n- `image` (required): Image file in JPEG, PNG, or WebP format (max 5MB)  \n    Note: The key name is case-sensitive and must be lowercase 'image'\n    \n\n## Responses\n\n- 200: Image uploaded successfully\n    \n- 400: Bad request (invalid file type, size, or missing image)\n    \n- 401: Unauthorized\n    \n- 403: Not the hotel owner\n    \n- 404: Hotel not found\n    \n\n## Notes\n\nHotels can have up to 10 gallery images. The images will be automatically resized and optimized."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Room Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract room type ID from response and save to environment\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"if (jsonData.id) {\r",
+									"    pm.environment.set(\"roomTypeId\", jsonData.id);\r",
+									"    console.log(\"Room Type ID saved:\", jsonData.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Deluxe Suite\",\r\n  \"price_per_night\": 199.99,\r\n  \"room_count\": 5,\r\n  \"amenities\": [\"King Bed\", \"Jacuzzi\", \"Mini Bar\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/room-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"room-types"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "# Create Room Type\n\nCreates a new room type for a specific hotel.\n\n## Headers\n- `Authorization` (required): Bearer token for authentication\n- `Content-Type` (required): application/json\n\n## Path Parameters\n- `hotelId`: ID of the hotel\n\n## Request Body\n- `name` (required): Room type name (e.g., \"Deluxe Suite\")\n- `price_per_night` (required): Price in dollars per night\n- `room_count` (required): Number of rooms of this type\n- `amenities` (optional): Array of amenities available in this room type\n\n## Responses\n- 201: Room type created successfully\n- 400: Validation error\n- 401: Unauthorized\n- 403: Not the hotel owner\n- 404: Hotel not found\n\n## Notes\nThe room type ID is automatically saved to the `roomTypeId` environment variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Room Type Gallery Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/nadav/csc309/PP1/pp1/tests/test-images/logo.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/room-types/{{roomTypeId}}/gallery",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"room-types",
+								"{{roomTypeId}}",
+								"gallery"
+							]
+						},
+						"description": "Adds an image to a room type's gallery.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n\n## Path Parameters\n\n- `hotelId`: ID of the hotel\n    \n- `roomTypeId`: ID of the room type\n    \n\n## Request Body (form-data)\n\n- `image` (required): Image file in JPEG, PNG, or WebP format (max 5MB)  \n    Note: The key name is case-sensitive and must be lowercase \"image\"\n    \n\n## Responses\n\n- 200: Image uploaded successfully\n    \n- 400: Bad request (invalid file type, size, or missing image)\n    \n- 401: Unauthorized\n    \n- 403: Not the hotel owner\n    \n- 404: Hotel or room type not found\n    \n\n## Notes\n\nRoom types can have up to 10 gallery images. The images will be automatically resized and optimized."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for hotel owners to create and manage their hotels and room types.\n\nThe typical workflow:\n\n1. Create a hotel\n    \n2. Upload a hotel logo and gallery images\n    \n3. Create room types for the hotel\n    \n4. Upload images for each room type\n    \n\nAll endpoints require authentication and ownership verification."
+		},
+		{
+			"name": "Flight & Travel",
+			"item": [
+				{
+					"name": "Generate invoice for a trip",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/invoice?tripId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"invoice"
+							],
+							"query": [
+								{
+									"key": "tripId",
+									"value": null
+								}
+							]
+						},
+						"description": "Generates a PDF invoice for a trip booking\n\n**Path Parameters**: tripItineraryId\n\n**Responses**:\n\n- 200: Invoice generated successfully (returns PDF)\n    \n- 404: Trip not found\n    \n- 403: User not authorized to access this trip"
+					},
+					"response": []
+				},
+				{
+					"name": "Get cities/airports (autocomplete)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/autocomplete?cities=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"autocomplete"
+							],
+							"query": [
+								{
+									"key": "cities",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Returns a list of cities and airports matching the search term\n\n**Query Parameters**: query, type (optional - \"cities\", \"airports\", or \"all\")\n\n**Responses**:\n\n- 200: List of matching cities/airports\n    \n- 400: Missing query parameter"
+					},
+					"response": []
+				},
+				{
+					"name": "Search for flights",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/flights/search?origin=Toronto&destination=Zurich&departure=2024-11-17&arrival=2024-11-17&type=round-trip",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"flights",
+								"search"
+							],
+							"query": [
+								{
+									"key": "origin",
+									"value": "Toronto"
+								},
+								{
+									"key": "destination",
+									"value": "Zurich"
+								},
+								{
+									"key": "departure",
+									"value": "2024-11-17"
+								},
+								{
+									"key": "arrival",
+									"value": "2024-11-17"
+								},
+								{
+									"key": "type",
+									"value": "round-trip"
+								}
+							]
+						},
+						"description": "Searches for available flights through the AFS system\n\n**Query Parameters**: origin, destination, departDate, returnDate, passengers\n\n**Responses**:\n\n- 200: Flight search results\n    \n- 400: Missing or invalid parameters"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify a flight for status ",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/flights/verify?lastName&bookingReference",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"flights",
+								"verify"
+							],
+							"query": [
+								{
+									"key": "lastName",
+									"value": null
+								},
+								{
+									"key": "bookingReference",
+									"value": null
+								}
+							]
+						},
+						"description": "Checks the current status of a flight\n\n**Path Parameters**: flightId\n\n**Responses**:\n\n- 200: Flight status information\n    \n- 404: Flight not found"
+					},
+					"response": []
+				},
+				{
+					"name": "Book hotel/flight",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "x-user-id",
+								"value": "",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"John\",\r\n  \"lastName\": \"Doe\",\r\n  \"email\": \"john.doe@example.com\",\r\n  \"passportNumber\": \"AB1234567\",\r\n  \"firstFlightId\": \"9383ba28-71a6-4493-8849-a5d0c5ae7802\",\r\n  \"returnFlightId\": \"041e500c-f970-4ec1-bd0f-428fa2bd26a2\",\r\n  \"hotelId\": 1,\r\n  \"checkInTime\": \"2024-12-15T15:00:00.000Z\",\r\n  \"checkOutTime\": \"2024-12-20T11:00:00.000Z\",\r\n  \"roomTypeId\": 2,\r\n  \"tripItineraryId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/booking",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"booking"
+							],
+							"query": [
+								{
+									"key": "firstName",
+									"value": "John",
+									"disabled": true
+								},
+								{
+									"key": "lastName",
+									"value": "Doe",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "user_1741472341927@example.com",
+									"disabled": true
+								},
+								{
+									"key": "passportNumber",
+									"value": "123456",
+									"disabled": true
+								},
+								{
+									"key": "firstFlightId",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "returnFlightId",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "Books flights and/or hotels for authenticated users\n\n**Headers**:\n\n- Authorization (Bearer token)\n    \n- Content-Type (application/json)\n    \n\n**Request Body Options**:\n\n- For Flights: firstName, lastName, email, passportNumber, firstFlightId, returnFlightId\n    \n- For Hotels: hotelId, checkInTime, checkOutTime, roomTypeId, tripItineraryId\n    \n- Combined: all of the above\n    \n\n**Responses**:\n\n- 200: Booking successful\n    \n- 400: Validation error or booking failure\n    \n- 401: Unauthorized"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "jwt",
+		"jwt": [
+			{
+				"key": "payload",
+				"value": "{\r\n  \"userId\": 1,\r\n  \"email\": \"user@example.com\"\r\n}",
+				"type": "string"
+			},
+			{
+				"key": "secret",
+				"value": "mysecretkey",
+				"type": "string"
+			},
+			{
+				"key": "algorithm",
+				"value": "HS256",
+				"type": "string"
+			},
+			{
+				"key": "isSecretBase64Encoded",
+				"value": false,
+				"type": "boolean"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "headerPrefix",
+				"value": "Bearer",
+				"type": "string"
+			},
+			{
+				"key": "queryParamKey",
+				"value": "token",
+				"type": "string"
+			},
+			{
+				"key": "header",
+				"value": "{}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

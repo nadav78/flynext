@@ -1,0 +1,19 @@
+/public
+  /images
+    /users
+      /{user_id}
+        profile.jpg
+        ...
+    /hotels
+      /{hotel_id}
+        logo.jpg
+        /gallery
+          1.jpg
+          2.jpg
+          ...
+    /room-types
+      /{room_type_id}
+        /gallery
+          1.jpg
+          2.jpg
+          ...

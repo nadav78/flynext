@@ -1,0 +1,1499 @@
+openapi: 3.0.0
+info:
+  title: FlyNext API
+  version: 1.0.0
+servers:
+  - url: http://{{baseurl}}
+  - url: http://{{base_url}}
+  - url: http://localhost:3000
+  - url: http://localhost:3001
+components:
+  securitySchemes:
+    noauthAuth:
+      type: http
+      scheme: noauth
+    jwtAuth:
+      type: http
+      scheme: jwt
+security:
+  - jwtAuth: []
+tags:
+  - name: hotels
+  - name: hotels > owner
+  - name: hotels > owner > room-type
+  - name: hotels > owner > reservations
+  - name: hotels > public
+  - name: hotels > user
+  - name: hotels > user > notification
+  - name: hotels > user > profile
+  - name: authentication
+  - name: Hotel Management
+    description: >-
+      Endpoints for hotel owners to create and manage their hotels and room
+      types.
+
+
+      The typical workflow:
+
+
+      1. Create a hotel
+          
+      2. Upload a hotel logo and gallery images
+          
+      3. Create room types for the hotel
+          
+      4. Upload images for each room type
+          
+
+      All endpoints require authentication and ownership verification.
+  - name: Flight & Travel
+paths:
+  /api/hotels/owner/room-type:
+    post:
+      tags:
+        - hotels > owner > room-type
+      summary: Create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                hotel_id: 1
+                name: Single
+                price_per_night: 10.99
+                amenities:
+                  - gym
+                  - tissue box
+                room_count: 50
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: x-user-id
+          in: header
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - hotels > owner > room-type
+      summary: Retrieve
+      parameters:
+        - name: ''
+          in: header
+          schema:
+            type: string
+        - name: hotel_id
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - hotels > owner > room-type
+      summary: Update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                hotel_id: 1
+                room_type_id: 1
+                name: Double
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/hotels/owner/reservations:
+    get:
+      tags:
+        - hotels > owner > reservations
+      summary: Retrieve reservations
+      parameters:
+        - name: hotel_id
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: OK
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 19:41:28 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                - id: 1
+                  check_in_time: '2025-03-15T00:00:00.000Z'
+                  check_out_time: '2025-03-20T00:00:00.000Z'
+                  is_cancelled: true
+                  is_paid: true
+                  hotelId: 1
+                  hotelRoomTypeId: 1
+                  userId: 1
+                  tripItineraryId: null
+                - id: 2
+                  check_in_time: '2025-03-21T00:00:00.000Z'
+                  check_out_time: '2025-03-25T00:00:00.000Z'
+                  is_cancelled: false
+                  is_paid: false
+                  hotelId: 1
+                  hotelRoomTypeId: 1
+                  userId: 1
+                  tripItineraryId: null
+    patch:
+      tags:
+        - hotels > owner > reservations
+      summary: Update reservation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                reservation_id: 3
+                is_cancelled: 'true'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: OK
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 23:47:54 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 3
+                check_in_time: '2025-03-21T00:00:00.000Z'
+                check_out_time: '2025-03-25T00:00:00.000Z'
+                is_cancelled: true
+                is_paid: false
+                hotelId: 1
+                hotelRoomTypeId: 1
+                userId: 1
+                tripItineraryId: null
+                reserver:
+                  id: 1
+                  password: $2b$10$aGXjWEK3uL3weNsBJbV7pOuTIOrMr9vKSsdN3qa.Sem9iLztKY5hy
+                  first_name: John
+                  last_name: Doe
+                  email: user@example.com
+                  phone_number: '9059059055'
+                  profileImage: null
+  /api/hotels/owner/:
+    get:
+      tags:
+        - hotels > owner
+      summary: Retrieve hotels
+      responses:
+        '200':
+          description: OK
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 20:05:44 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                - id: 1
+                  name: Ocean View Resort
+                  address: 123 Coastal Drive, Seaside, CA 94044
+                  city: Seaside
+                  country: United States
+                  star_rating: 4
+                  ownerId: 1
+                  description: >-
+                    A luxurious beachfront resort offering stunning ocean views
+                    and top-tier amenities for a relaxing getaway.
+                  logo: null
+                  website: https://www.oceanviewresort.com
+                  contact_email: info@oceanviewresort.com
+                  contact_phone: '9059059055'
+                  amenities: >-
+                    ["Swimming Pool","Spa","Restaurant","Free Wi-Fi","Fitness
+                    Center"]
+                  gallery_count: 0
+                - id: 3
+                  name: Ocean View Resort
+                  address: 123 Coastal Drive, Seaside, CA 94044
+                  city: Seaside
+                  country: United States
+                  star_rating: 4
+                  ownerId: 1
+                  description: >-
+                    A luxurious beachfront resort offering stunning ocean views
+                    and top-tier amenities for a relaxing getaway.
+                  logo: null
+                  website: https://www.oceanviewresort.com
+                  contact_email: info@oceanviewresort.com
+                  contact_phone: '9059059055'
+                  amenities: >-
+                    ["Swimming Pool","Spa","Restaurant","Free Wi-Fi","Fitness
+                    Center"]
+                  gallery_count: 0
+  /api/hotels:
+    post:
+      tags:
+        - Hotel Management
+      summary: Create Hotel
+      description: >-
+        # Create Hotel
+
+
+        Creates a new hotel with the authenticated user as the owner.
+
+
+        ## Headers
+
+        - `Authorization` (required): Bearer token for authentication
+
+        - `Content-Type` (required): application/json
+
+
+        ## Request Body
+
+        - `name` (required): Hotel name
+
+        - `address`: Physical address
+
+        - `city`: City location
+
+        - `country`: Country location
+
+        - `star_rating`: Hotel rating (1-5)
+
+        - `description`: Detailed description
+
+        - `website`: Hotel website URL
+
+        - `contact_email`: Contact email address
+
+        - `contact_phone`: Contact phone number
+
+        - `amenities`: Array of hotel amenities
+
+
+        ## Responses
+
+        - 201: Hotel created successfully
+
+        - 400: Validation error
+
+        - 401: Unauthorized
+
+
+        ## Notes
+
+        The hotel ID is automatically saved to the `hotelId` environment
+        variable for use in subsequent requests.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Grand Hotel
+                address: 123 Main St
+                city: Toronto
+                country: Canada
+                star_rating: 4
+                description: A wonderful hotel in downtown
+                website: http://grandhotel.example.com
+                contact_email: info@grandhotel.example.com
+                contact_phone: 123-456-7890
+                amenities:
+                  - WiFi
+                  - Pool
+                  - Parking
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/hotels/public:
+    get:
+      tags:
+        - hotels > public
+      summary: Retrieve
+      parameters:
+        - name: star_rating
+          in: query
+          schema:
+            type: integer
+          example: '4'
+      responses:
+        '200':
+          description: OK
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 20:04:52 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                hotels:
+                  - id: 1
+                    name: Ocean View Resort
+                    address: 123 Coastal Drive, Seaside, CA 94044
+                    city: Seaside
+                    country: United States
+                    star_rating: 4
+                    HotelRoomType:
+                      - id: 1
+                        name: Double
+                        price_per_night: '10.99'
+  /api/hotels/public/reserve:
+    post:
+      tags:
+        - hotels > public
+      summary: Create reservation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                hotel_id: 1
+                room_type_id: 1
+                check_in_time: '2025-03-21'
+                check_out_time: '2025-03-25'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '201':
+          description: Created
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 23:46:37 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 3
+                check_in_time: '2025-03-21T00:00:00.000Z'
+                check_out_time: '2025-03-25T00:00:00.000Z'
+                is_cancelled: false
+                is_paid: false
+                hotelId: 1
+                hotelRoomTypeId: 1
+                userId: 1
+                tripItineraryId: null
+    get:
+      tags:
+        - hotels > public
+      summary: Get reservations
+      responses:
+        '200':
+          description: OK
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 23:48:25 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                - id: 3
+                  check_in_time: '2025-03-21T00:00:00.000Z'
+                  check_out_time: '2025-03-25T00:00:00.000Z'
+                  is_cancelled: true
+                  is_paid: false
+                  hotelId: 1
+                  hotelRoomTypeId: 1
+                  userId: 1
+                  tripItineraryId: null
+                  hotel:
+                    id: 1
+                    name: Ocean View Resort
+                    address: 123 Coastal Drive, Seaside, CA 94044
+                    city: Seaside
+                    country: United States
+                    star_rating: 4
+                    ownerId: 1
+                    description: >-
+                      A luxurious beachfront resort offering stunning ocean
+                      views and top-tier amenities for a relaxing getaway.
+                    logo: null
+                    website: https://www.oceanviewresort.com
+                    contact_email: info@oceanviewresort.com
+                    contact_phone: '9059059055'
+                    amenities: >-
+                      ["Swimming Pool","Spa","Restaurant","Free Wi-Fi","Fitness
+                      Center"]
+                    gallery_count: 0
+                  roomType:
+                    id: 1
+                    hotelId: 1
+                    name: Double
+                    price_per_night: '10.99'
+                    amenities: '["gym","tissue box"]'
+                    room_count: 50
+                    gallery_count: 0
+  /api/users/notifications:
+    get:
+      tags:
+        - hotels > user > notification
+      summary: Get notifications
+      responses:
+        '200':
+          description: OK
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 23:48:03 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                notifications:
+                  - id: 2
+                    reservationId: 3
+                    userId: 1
+                    message: Your reservation has been cancelled
+                    created_at: '2025-03-08T23:47:54.882Z'
+                    is_read: false
+                    type: CANCELLATION
+                  - id: 1
+                    reservationId: 3
+                    userId: 1
+                    message: Reservation created
+                    created_at: '2025-03-08T23:46:37.082Z'
+                    is_read: true
+                    type: BOOKING
+    patch:
+      tags:
+        - hotels > user > notification
+      summary: Mark notifications as read
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                notificationIds:
+                  - 1
+                  - 2
+                  - 3
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: OK
+          headers:
+            vary:
+              schema:
+                type: string
+                example: >-
+                  RSC, Next-Router-State-Tree, Next-Router-Prefetch,
+                  Next-Router-Segment-Prefetch
+            content-type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Sat, 08 Mar 2025 23:47:07 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                message: Notifications marked as read
+  /api/users/profile:
+    put:
+      tags:
+        - hotels > user > profile
+      summary: Update User Profile
+      description: |-
+        Updates the logged-in user's profile information
+
+        **Headers**: Authorization (Bearer token)
+
+        **Request Body**: first_name, last_name, email, phone_number
+
+        **Responses**:
+
+        - 200: Profile updated successfully
+            
+        - 400: Validation error
+            
+        - 401: Unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                first_name: Updated
+                last_name: Name
+                phone_number: 987-654-3210
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: >-
+            Bearer
+            eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInRva2VuVHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NDE0ODIyNjIsImV4cCI6MTc0MjA4NzA2Mn0.6eiSy2h9LPtz-F9u0kWWDm4NmNMfKtIyrvMzo8xYvdQ
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - hotels > user > profile
+      summary: Get User Profile
+      description: |-
+        Retrieves the logged-in user's profile information
+
+        **Headers**: Authorization (Bearer token)
+
+        **Responses**:
+
+        - 200: User profile data
+            
+        - 401: Unauthorized
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/users/profile/image:
+    post:
+      tags:
+        - hotels > user > profile
+      summary: Add Profile Image
+      description: |-
+        Uploads a profile image for the logged-in user
+
+        **Headers**: Authorization (Bearer token)
+
+        **Request Body**: form-data with "image" field (max 2MB, JPEG/PNG)
+
+        **Responses**:
+
+        - 200: Image uploaded successfully
+            
+        - 400: Invalid image
+            
+        - 401: Unauthorized
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/users/login:
+    post:
+      tags:
+        - authentication
+      summary: Login User
+      description: |-
+        Authenticates a user and returns access tokens
+
+        **Request Body**: email, password
+
+        **Responses**:
+
+        - 200: Authentication successful
+            
+        - 400: Invalid credentials
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: '{{test_email}}'
+                password: password123
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/users/refresh-token:
+    post:
+      tags:
+        - authentication
+      summary: Refresh Token
+      description: |-
+        Gets a new access token using a refresh token
+
+        **Request Body**: refresh_token
+
+        **Responses**:
+
+        - 200: New access token generated
+            
+        - 401: Invalid refresh token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                refreshToken: '{{refresh_token}}'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/users/register:
+    post:
+      tags:
+        - authentication
+      summary: Register User
+      description: >-
+        Creates a new user account
+
+
+        **Request Body**: first_name, last_name, email, password, phone_number
+        (optional)
+
+
+        **Responses**:
+
+
+        - 201: User created successfully
+            
+        - 400: Validation error or email already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: '{{test_email}}'
+                password: password123
+                first_name: John
+                last_name: Doe
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/hotels/{hotelId}/logo:
+    post:
+      tags:
+        - Hotel Management
+      summary: Upload Hotel Logo
+      description: |-
+        Uploads or replaces the logo image for a specific hotel.
+
+        ## Headers
+
+        - `Authorization` (required): Bearer token for authentication
+            
+
+        ## Path Parameters
+
+        - `hotelId`: ID of the hotel
+            
+
+        ## Request Body (form-data)
+
+        - logo (required): Image file in JPEG, PNG, or WebP format (max 5MB)  
+            Note: The key name is case-sensitive
+            
+
+        ## Responses
+
+        - 200: Image uploaded successfully
+            
+        - 400: Bad request (invalid file type, size, or missing image)
+            
+        - 401: Unauthorized
+            
+        - 403: Not the hotel owner
+            
+        - 404: Hotel not found
+            
+
+        ## Notes
+
+        The image will be resized and optimized automatically.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                logo:
+                  type: string
+                  format: binary
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+        - name: hotelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/hotels/{hotelId}/gallery:
+    post:
+      tags:
+        - Hotel Management
+      summary: Upload Hotel Gallery Image
+      description: >-
+        Adds an image to a hotel's gallery collection.
+
+
+        ## Headers
+
+
+        - `Authorization` (required): Bearer token for authentication
+            
+
+        ## Path Parameters
+
+
+        - `hotelId`: ID of the hotel
+            
+
+        ## Request Body (form-data)
+
+
+        - `image` (required): Image file in JPEG, PNG, or WebP format (max
+        5MB)  
+            Note: The key name is case-sensitive and must be lowercase 'image'
+            
+
+        ## Responses
+
+
+        - 200: Image uploaded successfully
+            
+        - 400: Bad request (invalid file type, size, or missing image)
+            
+        - 401: Unauthorized
+            
+        - 403: Not the hotel owner
+            
+        - 404: Hotel not found
+            
+
+        ## Notes
+
+
+        Hotels can have up to 10 gallery images. The images will be
+        automatically resized and optimized.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+        - name: hotelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/hotels/{hotelId}/room-types:
+    post:
+      tags:
+        - Hotel Management
+      summary: Create Room Type
+      description: >-
+        # Create Room Type
+
+
+        Creates a new room type for a specific hotel.
+
+
+        ## Headers
+
+        - `Authorization` (required): Bearer token for authentication
+
+        - `Content-Type` (required): application/json
+
+
+        ## Path Parameters
+
+        - `hotelId`: ID of the hotel
+
+
+        ## Request Body
+
+        - `name` (required): Room type name (e.g., "Deluxe Suite")
+
+        - `price_per_night` (required): Price in dollars per night
+
+        - `room_count` (required): Number of rooms of this type
+
+        - `amenities` (optional): Array of amenities available in this room type
+
+
+        ## Responses
+
+        - 201: Room type created successfully
+
+        - 400: Validation error
+
+        - 401: Unauthorized
+
+        - 403: Not the hotel owner
+
+        - 404: Hotel not found
+
+
+        ## Notes
+
+        The room type ID is automatically saved to the `roomTypeId` environment
+        variable.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Deluxe Suite
+                price_per_night: 199.99
+                room_count: 5
+                amenities:
+                  - King Bed
+                  - Jacuzzi
+                  - Mini Bar
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+        - name: hotelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/hotels/{hotelId}/room-types/{roomTypeId}/gallery:
+    post:
+      tags:
+        - Hotel Management
+      summary: Upload Room Type Gallery Image
+      description: >-
+        Adds an image to a room type's gallery.
+
+
+        ## Headers
+
+
+        - `Authorization` (required): Bearer token for authentication
+            
+
+        ## Path Parameters
+
+
+        - `hotelId`: ID of the hotel
+            
+        - `roomTypeId`: ID of the room type
+            
+
+        ## Request Body (form-data)
+
+
+        - `image` (required): Image file in JPEG, PNG, or WebP format (max
+        5MB)  
+            Note: The key name is case-sensitive and must be lowercase "image"
+            
+
+        ## Responses
+
+
+        - 200: Image uploaded successfully
+            
+        - 400: Bad request (invalid file type, size, or missing image)
+            
+        - 401: Unauthorized
+            
+        - 403: Not the hotel owner
+            
+        - 404: Hotel or room type not found
+            
+
+        ## Notes
+
+
+        Room types can have up to 10 gallery images. The images will be
+        automatically resized and optimized.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+        - name: hotelId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: roomTypeId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/invoice:
+    post:
+      tags:
+        - Flight & Travel
+      summary: Generate invoice for a trip
+      description: |-
+        Generates a PDF invoice for a trip booking
+
+        **Path Parameters**: tripItineraryId
+
+        **Responses**:
+
+        - 200: Invoice generated successfully (returns PDF)
+            
+        - 404: Trip not found
+            
+        - 403: User not authorized to access this trip
+      requestBody:
+        content: {}
+      security:
+        - noauthAuth: []
+      parameters:
+        - name: tripId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/autocomplete:
+    get:
+      tags:
+        - Flight & Travel
+      summary: Get cities/airports (autocomplete)
+      description: >-
+        Returns a list of cities and airports matching the search term
+
+
+        **Query Parameters**: query, type (optional - "cities", "airports", or
+        "all")
+
+
+        **Responses**:
+
+
+        - 200: List of matching cities/airports
+            
+        - 400: Missing query parameter
+      security:
+        - noauthAuth: []
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: cities
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/flights/search:
+    get:
+      tags:
+        - Flight & Travel
+      summary: Search for flights
+      description: >-
+        Searches for available flights through the AFS system
+
+
+        **Query Parameters**: origin, destination, departDate, returnDate,
+        passengers
+
+
+        **Responses**:
+
+
+        - 200: Flight search results
+            
+        - 400: Missing or invalid parameters
+      security:
+        - noauthAuth: []
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: origin
+          in: query
+          schema:
+            type: string
+          example: Toronto
+        - name: destination
+          in: query
+          schema:
+            type: string
+          example: Zurich
+        - name: departure
+          in: query
+          schema:
+            type: string
+          example: '2024-11-17'
+        - name: arrival
+          in: query
+          schema:
+            type: string
+          example: '2024-11-17'
+        - name: type
+          in: query
+          schema:
+            type: string
+          example: round-trip
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/flights/verify:
+    get:
+      tags:
+        - Flight & Travel
+      summary: 'Verify a flight for status '
+      description: |-
+        Checks the current status of a flight
+
+        **Path Parameters**: flightId
+
+        **Responses**:
+
+        - 200: Flight status information
+            
+        - 404: Flight not found
+      security:
+        - noauthAuth: []
+      parameters:
+        - name: x-user-id
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: lastName
+          in: query
+          schema:
+            type: string
+        - name: bookingReference
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/booking:
+    post:
+      tags:
+        - Flight & Travel
+      summary: Book hotel/flight
+      description: >-
+        Books flights and/or hotels for authenticated users
+
+
+        **Headers**:
+
+
+        - Authorization (Bearer token)
+            
+        - Content-Type (application/json)
+            
+
+        **Request Body Options**:
+
+
+        - For Flights: firstName, lastName, email, passportNumber,
+        firstFlightId, returnFlightId
+            
+        - For Hotels: hotelId, checkInTime, checkOutTime, roomTypeId,
+        tripItineraryId
+            
+        - Combined: all of the above
+            
+
+        **Responses**:
+
+
+        - 200: Booking successful
+            
+        - 400: Validation error or booking failure
+            
+        - 401: Unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                firstName: John
+                lastName: Doe
+                email: john.doe@example.com
+                passportNumber: AB1234567
+                firstFlightId: 9383ba28-71a6-4493-8849-a5d0c5ae7802
+                returnFlightId: 041e500c-f970-4ec1-bd0f-428fa2bd26a2
+                hotelId: 1
+                checkInTime: '2024-12-15T15:00:00.000Z'
+                checkOutTime: '2024-12-20T11:00:00.000Z'
+                roomTypeId: 2
+                tripItineraryId: 1
+      security:
+        - noauthAuth: []
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: x-user-id
+          in: header
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{access_token}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}

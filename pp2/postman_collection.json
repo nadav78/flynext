@@ -1,0 +1,543 @@
+{
+	"info": {
+		"_postman_id": "b88a8d1c-56b0-428c-9815-daa16090a2dc",
+		"name": "FlyNext API V2",
+		"description": "# FlyNext API Collection\nThis collection contains endpoints for the FlyNext travel booking platform.\n\n## Authentication\nAll protected endpoints require a JWT token provided in the Authorization header:\n`Authorization: Bearer {{access_token}}`\n\nThe tokens refresh automatically when they expire using the refresh-token endpoint.\n\n## Environment Setup\nThis collection requires the following environment variables:\n- `base_url`: Your API base URL (e.g., http://localhost:3000)\n- `access_token`: JWT access token (set automatically after login)\n- `refresh_token`: JWT refresh token for regenerating access tokens\n- `hotelId`: Current hotel ID (set after Create Hotel)\n- `roomTypeId`: Current room type ID (set after Create Room Type)\n\n## Common Response Codes\n- 200: Success\n- 201: Resource created\n- 400: Bad request\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Resource not found\n- 500: Server error",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42932461"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"if (jsonData.accessToken) {\r",
+									"    pm.environment.set(\"access_token\", jsonData.accessToken);\r",
+									"}\r",
+									"if (jsonData.refreshToken) {\r",
+									"    pm.environment.set(\"refresh_token\", jsonData.refreshToken);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{test_email}}\",\r\n  \"password\": \"password123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						},
+						"description": "# User Login\n\nAuthenticates a user and returns access/refresh tokens.\n\n## Request Body\n\n- `email` (required): User's registered email address\n    \n- `password` (required): User's password\n    \n\n## Responses\n\n- 200: Successful login\n    \n- 401: Invalid credentials\n    \n- 422: Validation error\n    \n\n## Example Request\n\n```json  \n{  \n\"email\": \"{{test_email}}\",  \n\"password\": \"password123\"  \n}```"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"if (jsonData.accessToken) {\r",
+									"    pm.environment.set(\"access_token\", jsonData.accessToken);\r",
+									"    console.log(\"Access token refreshed and saved\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"refreshToken\": \"{{refresh_token}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/refresh-token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"refresh-token"
+							]
+						},
+						"description": "# Refresh Access Token\n\nGenerates a new access token using a valid refresh token.\n\n## Request Body\n- `refreshToken` (required): A valid refresh token from previous login\n\n## Responses\n- 200: New access token generated\n- 401: Invalid refresh token\n- 403: Refresh token expired\n\n## Example Response (200 OK)\n```json\n{\n  \"accessToken\": \"eyJhbGc...\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();\r",
+									"pm.environment.set(\"test_email\", `user_${timestamp}@example.com`);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{test_email}}\",\r\n  \"password\": \"password123\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						},
+						"description": "# User Registration  \nCreates a new user account in the FlyNext platform.\n\n## Request Body\n\n- `email` (required): Valid email address for the new user account\n\n- `password` (required): Password with minimum 8 characters\n\n- `first_name` (required): User's first name\n\n- `last_name` (required): User's last name\n\n- `phone_number` (optional): Contact phone number\n\n## Responses\n\n- 201: User successfully created\n\n- 400: Bad request (missing required fields)\n\n- 409: Email already in use\n\n- 422: Validation error\n\n## Example Request\n\n```json\n\n{\n\n\"email\": \"{{test_email}}\",\n\n\"password\": \"password123\",\n\n\"first_name\": \"John\",\n\n\"last_name\": \"Doe\",\n\n\"phone_number\": \"123-456-7890\"\n\n}\n```\n\nA pre-request script generates a unique email to allow easier testing"
+					},
+					"response": []
+				}
+			],
+			"description": "# Authentication Endpoints\n\nEndpoints for user registration, login, token refresh, and logout.\n\nThe authentication flow:\n1. Register a new user\n2. Login to receive access and refresh tokens\n3. Use the access token for all protected endpoints\n4. Use refresh token when access token expires"
+		},
+		{
+			"name": "User Profile",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile"
+							]
+						},
+						"description": "# Get User Profile\n\nRetrieves the currently authenticated user's profile information.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n\n## Responses\n\n- 200: Success\n    \n- 401: Unauthorized (missing or invalid token)\n    \n- 403: Forbidden (token doesn't match any user)\n    \n\n## Example Response (200 OK)\n\n```json  \n{  \n\"id\": 42,  \n\"email\": \"user@example.com\",  \n\"first_name\": \"John\",  \n\"last_name\": \"Doe\",  \n\"phone_number\": \"123-456-7890\",  \n\"profileImage\": \"/images/users/42/profile.jpg\",  \n\"created_at\": \"2025-03-08T12:34:56.789Z\"  \n}```"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"first_name\": \"Updated\",\r\n  \"last_name\": \"Name\",\r\n  \"phone_number\": \"987-654-3210\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile"
+							]
+						},
+						"description": "# Update User Profile\n\nUpdates the currently authenticated user's profile information.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n- `Content-Type` (required): application/json\n    \n\n## Request Body\n\n- `first_name` (optional): Updated first name\n    \n- `last_name` (optional): Updated last name\n    \n- `phone_number` (optional): Updated phone number\n    \n\n## Responses\n\n- 200: Profile successfully updated\n    \n- 401: Unauthorized (missing or invalid token)\n    \n- 422: Validation error\n    \n\n## Example Request\n\n```json  \n{  \n\"first_name\": \"Updated\",  \n\"last_name\": \"Name\",  \n\"phone_number\": \"987-654-3210\"  \n}```"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Profile Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/profile/image",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile",
+								"image"
+							]
+						},
+						"description": "# Upload Profile Image\n\nUploads or updates the authenticated user's profile image.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n- `Content-Type` (required): multipart/form-data\n    \n\n## Request Body\n\n- `image` (required): Image file (JPEG, PNG, or WebP)\n    \n\n## Responses\n\n- 200: Image successfully uploaded\n    \n- 400: Bad request (no image or invalid format)\n    \n- 401: Unauthorized (missing or invalid token)\n    \n- 413: Payload too large (image exceeds size limit)\n    \n\n## Example Response (200 OK)\n\n```json  \n{  \n\"message\": \"Profile image uploaded successfully\",  \n\"user\": {  \n\"id\": 42,  \n\"email\": \"user@example.com\",  \n\"first_name\": \"John\",  \n\"last_name\": \"Doe\",  \n\"profileImage\": \"/images/users/42/profile.jpg\"  \n}  \n}```"
+					},
+					"response": []
+				}
+			],
+			"description": "# User Profile Management\n\nEndpoints for viewing and managing user profile information, including:\n- Getting profile details\n- Updating profile information\n- Managing profile images\n\nAll endpoints require authentication via Bearer token."
+		},
+		{
+			"name": "Hotel Management",
+			"item": [
+				{
+					"name": "Create Hotel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"// Extract hotel ID from nested response\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"console.log(\"Parsed JSON:\", jsonData);\r",
+									"\r",
+									"// The hotel object is nested under the 'hotel' property\r",
+									"if (jsonData.hotel && jsonData.hotel.id) {\r",
+									"    pm.environment.set(\"hotelId\", jsonData.hotel.id);\r",
+									"    console.log(\"Hotel ID saved:\", jsonData.hotel.id);\r",
+									"} else {\r",
+									"    console.error(\"Hotel ID not found in response. Response structure:\", JSON.stringify(jsonData));\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Grand Hotel\",\r\n  \"address\": \"123 Main St\",\r\n  \"city\": \"Toronto\",\r\n  \"country\": \"Canada\",\r\n  \"star_rating\": 4,\r\n  \"description\": \"A wonderful hotel in downtown\",\r\n  \"website\": \"http://grandhotel.example.com\",\r\n  \"contact_email\": \"info@grandhotel.example.com\",\r\n  \"contact_phone\": \"123-456-7890\",\r\n  \"amenities\": [\"WiFi\", \"Pool\", \"Parking\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "# Create Hotel\n\nCreates a new hotel with the authenticated user as the owner.\n\n## Headers\n- `Authorization` (required): Bearer token for authentication\n- `Content-Type` (required): application/json\n\n## Request Body\n- `name` (required): Hotel name\n- `address`: Physical address\n- `city`: City location\n- `country`: Country location\n- `star_rating`: Hotel rating (1-5)\n- `description`: Detailed description\n- `website`: Hotel website URL\n- `contact_email`: Contact email address\n- `contact_phone`: Contact phone number\n- `amenities`: Array of hotel amenities\n\n## Responses\n- 201: Hotel created successfully\n- 400: Validation error\n- 401: Unauthorized\n\n## Notes\nThe hotel ID is automatically saved to the `hotelId` environment variable for use in subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Hotel Logo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "logo",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/logo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"logo"
+							]
+						},
+						"description": "Uploads or replaces the logo image for a specific hotel.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n\n## Path Parameters\n\n- `hotelId`: ID of the hotel\n    \n\n## Request Body (form-data)\n\n- logo (required): Image file in JPEG, PNG, or WebP format (max 5MB)  \n    Note: The key name is case-sensitive\n    \n\n## Responses\n\n- 200: Image uploaded successfully\n    \n- 400: Bad request (invalid file type, size, or missing image)\n    \n- 401: Unauthorized\n    \n- 403: Not the hotel owner\n    \n- 404: Hotel not found\n    \n\n## Notes\n\nThe image will be resized and optimized automatically."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Hotel Gallery Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/gallery",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"gallery"
+							]
+						},
+						"description": "Adds an image to a hotel's gallery collection.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n\n## Path Parameters\n\n- `hotelId`: ID of the hotel\n    \n\n## Request Body (form-data)\n\n- `image` (required): Image file in JPEG, PNG, or WebP format (max 5MB)  \n    Note: The key name is case-sensitive and must be lowercase 'image'\n    \n\n## Responses\n\n- 200: Image uploaded successfully\n    \n- 400: Bad request (invalid file type, size, or missing image)\n    \n- 401: Unauthorized\n    \n- 403: Not the hotel owner\n    \n- 404: Hotel not found\n    \n\n## Notes\n\nHotels can have up to 10 gallery images. The images will be automatically resized and optimized."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Room Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract room type ID from response and save to environment\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"if (jsonData.id) {\r",
+									"    pm.environment.set(\"roomTypeId\", jsonData.id);\r",
+									"    console.log(\"Room Type ID saved:\", jsonData.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Deluxe Suite\",\r\n  \"price_per_night\": 199.99,\r\n  \"room_count\": 5,\r\n  \"amenities\": [\"King Bed\", \"Jacuzzi\", \"Mini Bar\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/room-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"room-types"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "# Create Room Type\n\nCreates a new room type for a specific hotel.\n\n## Headers\n- `Authorization` (required): Bearer token for authentication\n- `Content-Type` (required): application/json\n\n## Path Parameters\n- `hotelId`: ID of the hotel\n\n## Request Body\n- `name` (required): Room type name (e.g., \"Deluxe Suite\")\n- `price_per_night` (required): Price in dollars per night\n- `room_count` (required): Number of rooms of this type\n- `amenities` (optional): Array of amenities available in this room type\n\n## Responses\n- 201: Room type created successfully\n- 400: Validation error\n- 401: Unauthorized\n- 403: Not the hotel owner\n- 404: Hotel not found\n\n## Notes\nThe room type ID is automatically saved to the `roomTypeId` environment variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Room Type Gallery Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/nadav/csc309/PP1/pp1/tests/test-images/logo.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hotels/{{hotelId}}/room-types/{{roomTypeId}}/gallery",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								"{{hotelId}}",
+								"room-types",
+								"{{roomTypeId}}",
+								"gallery"
+							]
+						},
+						"description": "Adds an image to a room type's gallery.\n\n## Headers\n\n- `Authorization` (required): Bearer token for authentication\n    \n\n## Path Parameters\n\n- `hotelId`: ID of the hotel\n    \n- `roomTypeId`: ID of the room type\n    \n\n## Request Body (form-data)\n\n- `image` (required): Image file in JPEG, PNG, or WebP format (max 5MB)  \n    Note: The key name is case-sensitive and must be lowercase \"image\"\n    \n\n## Responses\n\n- 200: Image uploaded successfully\n    \n- 400: Bad request (invalid file type, size, or missing image)\n    \n- 401: Unauthorized\n    \n- 403: Not the hotel owner\n    \n- 404: Hotel or room type not found\n    \n\n## Notes\n\nRoom types can have up to 10 gallery images. The images will be automatically resized and optimized."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for hotel owners to create and manage their hotels and room types.\n\nThe typical workflow:\n\n1. Create a hotel\n    \n2. Upload a hotel logo and gallery images\n    \n3. Create room types for the hotel\n    \n4. Upload images for each room type\n    \n\nAll endpoints require authentication and ownership verification."
+		}
+	]
+}

@@ -1,4 +1,4 @@
-# PP2
+# PP1
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://mcsscm.utm.utoronto.ca/csc309_20251/group_217/PP2.git
+git remote add origin https://mcsscm.utm.utoronto.ca/csc309_20251/group_143/PP1.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://mcsscm.utm.utoronto.ca/csc309_20251/group_217/PP2/-/settings/integrations)
+- [ ] [Set up project integrations](https://mcsscm.utm.utoronto.ca/csc309_20251/group_143/PP1/-/settings/integrations)
 
 ## Collaborate with your team
 
@@ -36,7 +36,7 @@ git push -uf origin main
 
 Use the built-in continuous integration in GitLab.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
+- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
 - [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
 - [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
 - [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
