@@ -5,6 +5,31 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import * as jose from 'jose'; 
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function getUserIdFromToken(req) {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const token = authHeader.split(' ')[1];
+
+  const decoded = verifyAccessToken(token);
+  if (!decoded || !decoded.userId) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId }
+  });
+  if (!user) {
+    return NextResponse.json({ error: 'User not found from token' }, { status: 404 });
+  }
+
+  return user
+}
 
 // Universal secret retrieval that works in all environments
 function getJwtSecret() {

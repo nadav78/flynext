@@ -2,10 +2,11 @@ import fs from "fs/promises";
 import path from "path";
 import querystring from "querystring";
 import { PrismaClient } from '@prisma/client';
+import { error } from "console";
 
 const prisma = new PrismaClient();
 
-const API_KEY_FILE = path.join(process.cwd(), "..", "api-keys.txt");
+const API_KEY_FILE = path.join(process.cwd(), "api-keys.txt");
 console.log("API_KEY_FILE", API_KEY_FILE);
 const BASE_URL = "https://advanced-flights-system.replit.app";
 
@@ -20,6 +21,35 @@ export async function getAPIKey() {
   } catch (error) {
     console.error("Error reading API key:", error);
     throw new Error("API key not found. Ensure api-keys.txt exists/key is valid.");
+  }
+}
+
+export async function cancelFlight(bookingReference, lastName) {
+  const apiKey = await getAPIKey();
+  const url = `${BASE_URL}/api/bookings/cancel`;
+  const body = {"bookingReference" : bookingReference, 
+                "lastName" : lastName};
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    console.log(data);
+    if(response.status !== 200) {
+      console.error("Error cancelling flight through AFS:", response.status);
+    }
+    if(data.status !== "CANCELLED") {
+      return {error: "Flight through AFS still shows up as not cancelled."};
+    }
+    return { success: "Flight cancelled on AFS successfully."};
+  } catch (error) {
+    console.error("Error cancelling flight through AFS:", error);
+    return { error: "Failed to cancel flight" };
   }
 }
 
@@ -115,44 +145,39 @@ export async function getAutocomplete(queryType) {
  * @param {string} [params.returnFlightId] - The ID of the return flight 
 * @returns {Object} - Success message or error from AFS.
 */
-export async function bookFlight(params) {
-  const userParams = {
-    userId: params.userId,
-    firstName: params.firstName,
-    lastName: params.lastName,
-    email: params.email,
-    passportNumber: params.passportNumber,
-    flightIds: [params.firstFlightId, params.returnFlightId]
-  };
+export async function bookFlight(
+  {userId,
+  firstName,
+  lastName,
+  email,
+  passportNumber,
+  flightIds},
+  tripItineraryId) 
+{
   const userDetails = await prisma.user.findFirst({
     where: {
-      id: params.id,
-      userId: params.userId,
+      id: userId
     },
   });
 
   if (!userDetails) {
-    console.error(`Invalid user with ID ${userParams.userId}`);
+    console.error(`Invalid user with ID ${userId}`);
     return { error: "User not found" };
   }
 
-  if (!userParams.userId) {
-    console.error("User ID required to book flight");
-    return { error: "User ID required to book flight" };
-  }
-  if (!userParams.firstName || !userParams.lastName) {
+  if (!firstName || !lastName) {
     console.error("First and last name required to book flight");
     return { error: "First and last name required to book flight" };
   }
-  if (!userParams.email) {
+  if (!email) {
     console.error("Email required to book flight");
     return { error: "Email required to book flight" };
   }
-  if (!userParams.passportNumber) {
+  if (!passportNumber) {
     console.error("Passport number required to book flight");
     return { error: "Passport number required to book flight" };
   }
-  if (!userParams.firstFlightId) {
+  if (!flightIds || flightIds.length === 0) {
     console.error("First flight ID required to book flight");
     return { error: "First flight ID required to book flight" };
   }
@@ -166,34 +191,89 @@ export async function bookFlight(params) {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
     },
-    body: JSON.stringify(userParams),
+    body: JSON.stringify({
+      userId,
+      firstName,
+      lastName,
+      email,
+      passportNumber,
+      flightIds}),
   });
 
   if (!postResponse.ok) {
     console.error("Error booking flight:", postResponse.status, postResponse.statusText, await postResponse.text());
-    return { error: "Failed to book flight" };
+    return { error: "Failed to book flight", status: postResponse.status };
   }
 
+  const postResponseJson = await postResponse.json();
   // either 1 or 2 flights in postResponse.flights[0/1].price
   // so add both of them if second exists, otherwise just first one
-  const total_price = postResponse.flights[0].price +
-    (postResponse.flights[1] ? postResponse.flights[1].price : 0);
+  const total_flight_price = postResponseJson.flights.at(0).price +
+    (postResponseJson.flights.at(1).price ? postResponseJson.flights.at(1).price : 0);
+  const bookingReference = postResponseJson.bookingReference;
+  const ticketNumber = postResponseJson.ticketNumber;
 
-  // insert new booking into db
-  const booking = await prisma.booking.create({
-    data: {
-      id: params.id,
-      user_id: params.userId,
-      afs_booking_reference: postResponse.bookingReference,
-      total_price: total_price,
-    },
-  });
-
-  if (!booking) {
-    console.error("Failed to insert booking into database");
-    return { error: "Failed to insert booking into database" };
+  if(!tripItineraryId) {
+    // create new trip
+      const newTrip = await prisma.tripItinerary.create({
+        data: {
+          userId: userId,
+          afs_booking_reference: bookingReference,
+          afs_ticket_number: ticketNumber,
+          total_price: total_flight_price,
+        }
+      });
+      if (!newTrip) {
+        console.error("Failed to create trip itinerary");
+        return { error: "Failed to create trip itinerary" };
+      }
   }
-  return await postResponse.json();
+  else {
+    const trip = await prisma.tripItinerary.findFirst({
+      where: {
+        id: tripItineraryId,
+      }
+    });
+    console.log(trip);
+    if(!trip) {
+      // create new trip
+      const newTrip = await prisma.tripItinerary.create({
+        data: {
+          userId: userId,
+          afs_booking_reference: bookingReference,
+          afs_ticket_number: ticketNumber,
+          total_price: total_flight_price,
+        }
+      });
+      if (!newTrip) {
+        console.error("Failed to create trip itinerary");
+        return { error: "Failed to create trip itinerary" };
+      }
+    }
+    else {
+      // update trip
+      const current_price = parseInt(trip.total_price);
+      console.log(current_price);
+      const total_price = current_price + total_flight_price;
+      const updatedTrip = await prisma.tripItinerary.update({
+        where: {
+          id: tripItineraryId,
+        },
+        data: {
+          afs_booking_reference: bookingReference,
+          afs_ticket_number: ticketNumber,
+          total_price: total_price,
+        }
+      });
+      if (!updatedTrip) {
+        console.error("Failed to update trip itinerary");
+        return { error: "Failed to update trip itinerary" };
+      }
+      // cancel existing flight booking
+      await cancelFlight(bookingReference, lastName);
+    }
+  }
+  return { success: "Flight booked successfully", bookingReference, ticketNumber };
 }
 
 /*
