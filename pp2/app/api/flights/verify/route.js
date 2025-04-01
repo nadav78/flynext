@@ -6,7 +6,21 @@ export async function GET(req) {
 
     const lastName = params.get("lastName") || "";
     const bookingReference = params.get("bookingReference") || "";
-    const userId = req.headers.get('x-user-id');
+    const userId = await returnUserId(req);
+
+    // first ensure that in all cases user exists and logged in
+    if (!userId) {
+        return NextResponse.json({ error: "User ID required, should be logged in." }, { status: 400 });
+    }
+    const userExists = await prisma.user.findFirst({
+        where: {
+            id: userId,
+        },
+    });
+    
+    if (!userExists) {
+        return NextResponse.json({ error: "User not found" }, { status: 400 });
+    }
 
     if(!lastName) {
         return NextResponse.json({ error: "Last name required" }, { status: 400 });

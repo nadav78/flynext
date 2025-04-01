@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
 }
 
 model User {
@@ -118,6 +118,7 @@ model TripItinerary {
   user                  User               @relation(fields: [userId], references: [id])
   userId                Int
   afs_booking_reference String?
+  afs_ticket_number     String?
   created_at            DateTime           @default(now())
   total_price           Decimal?
   invoice_url           String? // For storing PDF invoice links
