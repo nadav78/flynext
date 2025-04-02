@@ -60,8 +60,11 @@ model Notification {
 }
 
 enum NotificationType {
-  BOOKING
-  CANCELLATION
+  USER_BOOKING_CREATED      // When a user creates a booking
+  USER_BOOKING_CANCELLED    // When a user's booking is cancelled (by them or owner)
+  USER_BOOKING_MODIFIED     // When a user's booking details change
+  OWNER_NEW_BOOKING         // When someone books at the owner's hotel
+  OWNER_BOOKING_CANCELLED   // When a booking at owner's hotel is cancelled
 }
 
 model Hotel {
