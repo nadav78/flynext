@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/app/components/contexts/auth-context';
+import { useAuth } from '@/components/contexts/auth-context';
 
 export default function Register() {
   const [formData, setFormData] = useState({
