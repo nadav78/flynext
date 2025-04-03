@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from "react";
-import Navbar from "../components/navbar";
+import Navbar from "../../components/navbar";
 
 const FlightsPage: React.FC = () => {
   const [formData, setFormData] = useState({

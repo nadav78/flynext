@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import Navbar from "./components/navbar";
+import Navbar from "../components/navbar";
 
 export default function Home() {
   const [selected, setSelected] = useState("Select");
