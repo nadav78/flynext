@@ -1,6 +1,10 @@
 'use client';
 import React, { useState, useEffect } from "react"; 
+<<<<<<< HEAD
 import Navbar from "../components/Navbar";
+=======
+import Navbar from "../../components/navbar";
+>>>>>>> 09ab347c783da35ad0f32490b2fdc9fc243b0827
 
 export default function Flights() {
     return (
