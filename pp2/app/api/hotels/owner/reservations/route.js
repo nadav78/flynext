@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, NotificationType } from '@prisma/client';
 import { z } from 'zod';
 import { connect } from "http2";
 
@@ -164,7 +164,7 @@ export async function PATCH(req) {
                             }
                         },
                         message: `Your reservation has been cancelled`,
-                        type: "CANCELLATION"
+                        type: NotificationType.USER_BOOKING_CANCELLED,
                     }
                 });
             }

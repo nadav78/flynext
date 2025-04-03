@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, NotificationType } from '@prisma/client';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();
@@ -76,11 +76,18 @@ export async function POST(req) {
                     },
                     check_out_time: {
                         gte: validData.check_in_time
-                    }
+                    },
+                    is_cancelled: false
                 }
             });
 
-            if (overlappingReservations.length > 0) {
+            const roomType = await tx.hotelRoomType.findUnique({
+                where: {
+                    id: validData.room_type_id
+                }
+            });
+
+            if (overlappingReservations.length >= roomType.room_count) {
                 throw new Error("Room is not available for the selected dates");
             }
 
@@ -131,8 +138,8 @@ export async function POST(req) {
                             id: reservation.id
                         }
                     },
-                    message: `Reservation created`,
-                    type: "BOOKING"
+                    message: `A user has created a reservation`,
+                    type: NotificationType.OWNER_NEW_BOOKING
                 }
             })
 

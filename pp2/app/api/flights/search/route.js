@@ -7,9 +7,7 @@ export async function GET(req) {
   const destination = searchParams.get("destination") || "";
   const departure = searchParams.get("departure") || ""; // for round-trip, departure is original date of flight leaving, arrival is date of flight leaving on the way back
   const arrival = searchParams.get("arrival") || "";
-  const type = searchParams.get("type") || "round-trip";
-  console.log("searchParams", searchParams);
-  console.log("departure, arrival", departure, arrival);    
+  const type = searchParams.get("type") || "round-trip";    
 
   if (type !== "round-trip" && type !== "one-way") {
     return NextResponse.json({ error: "Invalid flight type" }, { status: 400 });
