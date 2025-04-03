@@ -160,7 +160,6 @@ export async function PATCH(req) {
     const validData = validationResult.data;
 
     // Prepare update data
-    const updateData = {};
     validData.amenities = validData.amenities ? JSON.stringify(validData.amenities) : null
 
     try {
@@ -180,12 +179,66 @@ export async function PATCH(req) {
             }, { status: 404 });
         }
 
+        // Check if room count is being reduced
+        if (validData.room_count !== undefined && validData.room_count < roomType.room_count) {
+            // Get active (non-cancelled) reservations for this room type
+            const activeReservations = await prisma.hotelReservation.findMany({
+                where: {
+                    hotelRoomTypeId: validData.room_type_id,
+                    is_cancelled: false
+                },
+                orderBy: {
+                    check_in_time: 'desc' // Cancel most recent/future bookings first
+                },
+                include: {
+                    reserver: true // Include user information for notifications
+                }
+            });
+
+            // If reducing room count below number of active reservations
+            if (validData.room_count < activeReservations.length) {
+                // Calculate how many reservations need to be cancelled
+                const reservationsToCancel = activeReservations.slice(0, activeReservations.length - validData.room_count);
+                
+                // Get hotel details for notification
+                const hotel = await prisma.hotel.findUnique({
+                    where: { id: validData.hotel_id },
+                    select: { name: true }
+                });
+
+                // Cancel each reservation and create notifications
+                for (const reservation of reservationsToCancel) {
+                    // Update reservation status to cancelled
+                    await prisma.hotelReservation.update({
+                        where: { id: reservation.id },
+                        data: { is_cancelled: true }
+                    });
+
+                    // Create notification for the user
+                    await prisma.notification.create({
+                        data: {
+                            userId: reservation.userId,
+                            reservationId: reservation.id,
+                            message: `Your reservation at ${hotel.name} for ${roomType.name} has been cancelled due to room availability changes.`,
+                            type: "USER_BOOKING_CANCELLED",
+                            is_read: false
+                        }
+                    });
+                }
+            }
+        }
+
         // Update the room type
         const updatedRoomType = await prisma.hotelRoomType.update({
             where: {
                 id: validData.room_type_id
             },
-            data: updateData
+            data: {
+                ...(validData.name && { name: validData.name }),
+                ...(validData.price_per_night && { price_per_night: validData.price_per_night }),
+                ...(validData.amenities && { amenities: validData.amenities }),
+                ...(validData.room_count && { room_count: validData.room_count })
+            }
         });
 
         return NextResponse.json(updatedRoomType, { status: 200 });
