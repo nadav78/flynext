@@ -1,8 +1,10 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import Navbar from "./components/navbar";
+import Navbar from "./components/Navbar";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const [selected, setSelected] = useState("Select");
   const transitionTexts = [" flight ", " hotel "];
   const [animatedText, setAnimatedText] = useState(transitionTexts[0]);
@@ -23,6 +25,12 @@ export default function Home() {
     setSelected(option);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
+    }
+    // Navigate based on selection
+    if (option === "Flights") {
+      router.push("/flights");
+    } else if (option === "Hotels") {
+      router.push("/hotels");
     }
   };
 

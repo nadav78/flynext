@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/app/components/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 
 export default function Navbar() {

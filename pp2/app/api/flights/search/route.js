@@ -25,7 +25,7 @@ export async function GET(req) {
   if(!/^\d{4}-\d{2}-\d{2}$/.test(departure) || (arrival && !/^\d{4}-\d{2}-\d{2}$/.test(arrival))) {
     return NextResponse.json({ error: "Invalid date format (use YYYY-MM-DD)" }, { status: 400 });
   }
-  if (arrival < departure) {
+  if (arrival && arrival < departure) {
     return NextResponse.json({ error: "Arrival date must be after departure date" }, { status: 400 });
   }
 

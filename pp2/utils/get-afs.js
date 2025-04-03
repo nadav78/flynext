@@ -2,7 +2,6 @@ import fs from "fs/promises";
 import path from "path";
 import querystring from "querystring";
 import { PrismaClient } from '@prisma/client';
-import { error } from "console";
 
 const prisma = new PrismaClient();
 
@@ -402,7 +401,6 @@ export async function populateAirports() {
     return { error: "Failed to populate airports" };
   }
 }
-
 
 export async function getInitialData() {
   try {

@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "NotificationType" AS ENUM ('BOOKING', 'CANCELLATION');
+CREATE TYPE "NotificationType" AS ENUM ('USER_BOOKING_CREATED', 'USER_BOOKING_CANCELLED', 'USER_BOOKING_MODIFIED', 'OWNER_NEW_BOOKING', 'OWNER_BOOKING_CANCELLED');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -99,6 +99,7 @@ CREATE TABLE "TripItinerary" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "afs_booking_reference" TEXT,
+    "afs_ticket_number" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "total_price" DECIMAL(65,30),
     "invoice_url" TEXT,
