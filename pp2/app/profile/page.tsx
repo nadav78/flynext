@@ -1,8 +1,8 @@
 'use client';
 
-import ProtectedRoute from '@/app/components/auth/ProtectedRoute';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/app/components/contexts/auth-context';
+import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
