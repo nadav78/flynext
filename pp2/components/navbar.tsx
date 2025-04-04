@@ -2,10 +2,15 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "../contexts/auth-context";
+import { usePathname, useSearchParams } from "next/navigation"; 
 
 const Navbar: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
   const { user, loading, logout } = useAuth();
+  const pathname = usePathname(); // Get current path
+  const searchParams = useSearchParams(); // Get search params
+
+  const currentPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
@@ -125,7 +130,7 @@ const Navbar: React.FC = () => {
               </div>
             ) : (
               <>
-                <Link href="/login" className="btn btn-ghost">Login</Link>
+                <Link href={`/login?redirect=${encodeURIComponent(currentPath)}`} className="btn btn-ghost">Login</Link>
                 <Link href="/register" className="btn btn-ghost">Register</Link>
               </>
             )}
