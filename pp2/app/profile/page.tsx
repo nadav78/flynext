@@ -166,10 +166,10 @@ export default function Profile() {
     setIsSubmitting(true);
 
     const formData = new FormData();
-    formData.append('profileImage', imageFile);
+    formData.append('image', imageFile);
 
     try {
-      const response = await fetch('/api/users/profile-image', {
+      const response = await fetch('/api/users/profile/image', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
