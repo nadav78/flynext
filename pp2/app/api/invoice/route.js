@@ -1,11 +1,8 @@
-/* This file was created with assistance from Claude 3.7 Sonnet */ 
-
-import PDFDocument from 'pdfkit';
-import fs from 'fs';
-import path from 'path';
-import { promises as fsPromises } from 'fs';
-import prisma from '@/prisma';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
+
+const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
@@ -22,14 +19,14 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Trip ID required' }, { status: 400 });
     }
 
-    // Find trip and verify ownership
+    // Find trip itinerary and verify ownership
     const tripItinerary = await prisma.tripItinerary.findUnique({
       where: { 
         id: parseInt(tripId, 10),
-        userId: parseInt(userId, 10) // Ensure user can only access their own trips
+        userId: parseInt(userId, 10)
       },
       include: {
-        user: true, // Include user details for the invoice
+        user: true,
         HotelReservation: {
           include: {
             hotel: true,
@@ -43,86 +40,72 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Trip not found or unauthorized' }, { status: 404 });
     }
 
-    // Setup invoice directory
-    const invoiceDir = path.join(process.cwd(), 'public', 'invoices');
-    await fsPromises.mkdir(invoiceDir, { recursive: true });
+    // Create a new PDF document
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
 
-    const invoiceFileName = `invoice_${tripItinerary.id}.pdf`;
-    const invoiceFullPath = path.join(invoiceDir, invoiceFileName);
+    // Set fonts
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 12;
+    const textColor = rgb(0, 0, 0);
 
-    // Create PDF document
-    const doc = new PDFDocument();
-    const writeStream = fs.createWriteStream(invoiceFullPath);
-    
-    doc.pipe(writeStream);
+    // Helper function to add text
+    let y = 750; // Starting Y position for content
+    const lineHeight = 14;
+    const margin = 50;
+
+    const addText = (text, options = {}) => {
+      page.drawText(text, {
+        x: margin,
+        y,
+        font,
+        size: fontSize,
+        color: textColor,
+        ...options,
+      });
+      y -= lineHeight;
+    };
 
     // Add content to PDF
-    doc.fontSize(20).text('Trip Invoice', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(14).text(`Booking Reference: ${tripItinerary.afs_booking_reference || 'N/A'}`);
-    doc.text(`Total Price: ${tripItinerary.total_price || 'N/A'}`);
-    doc.text(`Date of invoice: ${tripItinerary.created_at.toDateString()}`);
-    doc.moveDown();
-    doc.fontSize(16).text('Contact Information', { underline: true });
-    doc.moveDown();
-    
-    // Use the related user data instead of direct properties
-    doc.text(`Full Name: ${tripItinerary.user.first_name || ''} ${tripItinerary.user.last_name || ''}`);
-    doc.text(`Email: ${tripItinerary.user.email || ''}`);
-    doc.text(`Phone: ${tripItinerary.user.phone_number || ''}`);
-    doc.moveDown();
+    addText('Trip Invoice', { size: 20, align: 'center' });
+    addText(`Booking Reference: ${tripItinerary.afs_booking_reference || 'N/A'}`);
+    addText(`Total Price: ${tripItinerary.total_price || 'N/A'}`);
+    addText(`Date of invoice: ${tripItinerary.created_at.toDateString()}`);
+    addText('Contact Information', { size: 16 });
+    addText(`Full Name: ${tripItinerary.user.first_name || ''} ${tripItinerary.user.last_name || ''}`);
+    addText(`Email: ${tripItinerary.user.email || ''}`);
+    addText(`Phone: ${tripItinerary.user.phone_number || ''}`);
 
     if (tripItinerary.HotelReservation.length > 0) {
-      doc.fontSize(16).text('Hotel Reservations', { underline: true });
-      doc.moveDown();
-
+      addText('Hotel Reservations', { size: 16 });
       tripItinerary.HotelReservation.forEach((reservation, index) => {
-        // Hotel reservation details
-        doc.fontSize(14).text(`Reservation ${index + 1}`, { underline: true });
-        
-        // Rest of your hotel details code...
-        doc.text(`Hotel Name: ${reservation.hotel.name}`);
-        if (reservation.hotel.address) doc.text(`Address: ${reservation.hotel.address}`);
-        // Continue with other hotel details
-
-        // Room details
-        doc.text(`Room Type: ${reservation.roomType.name}`);
-        if (reservation.roomType.price_per_night) doc.text(`Price per Night: ${reservation.roomType.price_per_night}`);
-        
-        // Dates
-        doc.text(`Check-in: ${new Date(reservation.check_in_time).toLocaleString()}`);
-        doc.text(`Check-out: ${new Date(reservation.check_out_time).toLocaleString()}`);
-        doc.moveDown();
+        addText(`Reservation ${index + 1}`, { size: 14 });
+        addText(`Hotel Name: ${reservation.hotel.name}`);
+        addText(`Room Type: ${reservation.roomType.name}`);
+        addText(`Check-in: ${new Date(reservation.check_in_time).toLocaleString()}`);
+        addText(`Check-out: ${new Date(reservation.check_out_time).toLocaleString()}`);
       });
     } else {
-      doc.text('No hotel reservations found for this trip.');
+      addText('No hotel reservations found for this trip.');
     }
 
-    // Add flight details if needed
-    
-    // Finish PDF
-    doc.end();
+    // Serialize the PDF to bytes (Uint8Array)
+    const pdfBytes = await pdfDoc.save();
 
-    // Wait for the PDF to be fully written
-    await new Promise((resolve, reject) => {
-      writeStream.on('finish', resolve);
-      writeStream.on('error', reject);
+    // Convert Uint8Array to ArrayBuffer
+    const pdfBuffer = pdfBytes.buffer;
+
+    // Return PDF file directly
+    return new NextResponse(pdfBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=invoice_${tripItinerary.id}.pdf`,
+      },
     });
-
-    // Update the database with the invoice URL
-    const invoiceUrl = `/invoices/${invoiceFileName}`;
-    await prisma.tripItinerary.update({
-      where: { id: parseInt(tripId, 10) },
-      data: { invoice_url: invoiceUrl },
-    });
-
-    return NextResponse.json({ 
-      success: true,
-      invoiceUrl 
-    }, { status: 200 });
   } catch (error) {
     console.error('Error generating invoice:', error);
-    return NextResponse.json({ error: 'Error generating invoice' }, { status: 500 });
+    return NextResponse.json({ error: "Error generating invoice" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
