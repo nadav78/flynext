@@ -1,0 +1,3 @@
+[submodule "afs"]
+	path = afs
+	url = https://github.com/Kianoosh76/afs.git
