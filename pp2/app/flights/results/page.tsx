@@ -87,13 +87,100 @@ function renderStars(rating: number) {
 }
 
 // --------------------
+// Flight Card Component
+// --------------------
+const FlightCard: React.FC<{
+  result: FlightResult;
+  isSelected: boolean;
+  onSelect: () => void;
+}> = ({ result, isSelected, onSelect }) => {
+  const totalPrice = result.flights.reduce((sum, f) => sum + f.price, 0);
+  return (
+    <div
+      onClick={onSelect}
+      className={`card p-4 transition-all duration-200 cursor-pointer
+        ${isSelected ? "border-2 border-blue-500 shadow-lg" : "border border-gray-200 hover:shadow-xl"}
+      `}
+    >
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="text-lg font-semibold">
+          {result.legs === 1 ? "Direct Flight" : "Connecting Flight"}
+        </h3>
+        {isSelected && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(); // toggles selection off
+            }}
+            className="btn btn-ghost btn-square text-blue-500"
+            title="Clear Selection"
+          >
+            ×
+          </button>
+        )}
+      </div>
+      {/* Render each flight segment in the itinerary */}
+      <div className="space-y-2">
+  {result.flights.map((flight) => (
+    <div key={flight.id} className="border rounded-md p-2 bg-gray-50 dark:bg-base-100">
+      {/* Flight header: flight number on left, airline on right */}
+      <div className="flex items-center">
+        <span className="font-medium text-left w-1/2">{flight.flightNumber}</span>
+        <span className="text-sm text-gray-600 text-right w-1/2">{flight.airline.name}</span>
+      </div>
+      {/* Origin / Destination row */}
+      <div className="flex mt-1">
+        <div className="w-1/2 text-left">
+          <strong>From:</strong> {flight.origin.code} <br />
+          <small className="text-gray-500">{flight.origin.name}</small>
+        </div>
+        <div className="w-1/2 text-right">
+          <strong>To:</strong> {flight.destination.code} <br />
+          <small className="text-gray-500">{flight.destination.name}</small>
+        </div>
+      </div>
+      {/* Departure / Arrival row */}
+      <div className="flex mt-1 text-xs">
+        <div className="w-1/2 text-left">
+          <strong>Dep:</strong> {new Date(flight.departureTime).toLocaleString()}
+        </div>
+        <div className="w-1/2 text-right">
+          <strong>Arr:</strong> {new Date(flight.arrivalTime).toLocaleString()}
+        </div>
+      </div>
+      {/* Price, Status, and Seats row */}
+      <div className="flex mt-1 text-sm">
+        <div className="w-1/3 text-left">
+          <span className="font-semibold">
+            {flight.currency} {flight.price}
+          </span>
+        </div>
+        <div className="w-1/3 text-center">
+          {flight.status}
+        </div>
+        <div className="w-1/3 text-right">
+          {flight.availableSeats} seats
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+      <div className="text-right mt-2">
+        <p className="text-sm font-medium">Flight Section Total: {result.flights[0].currency} {totalPrice}</p>
+      </div>
+    </div>
+  );
+};
+
+// --------------------
 // Main Component
 // --------------------
 export default function FlightResultsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Extract search criteria from URL query parameters.
+  // Extract search criteria
   const origin = searchParams.get("origin") || "";
   const destination = searchParams.get("destination") || "";
   const departure = searchParams.get("departure") || "";
@@ -103,10 +190,10 @@ export default function FlightResultsPage() {
   // Flight results state
   const [firstTripResults, setFirstTripResults] = useState<FlightResult[]>([]);
   const [returnTripResults, setReturnTripResults] = useState<FlightResult[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Selected itineraries for outbound and return
+  // Selected flight itineraries
   const [selectedOutbound, setSelectedOutbound] = useState<FlightResult | null>(null);
   const [selectedReturn, setSelectedReturn] = useState<FlightResult | null>(null);
 
@@ -114,11 +201,15 @@ export default function FlightResultsPage() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [selectedHotelRoom, setSelectedHotelRoom] = useState<SelectedHotelRoom>(null);
 
-  // Fetch flight results once on mount
+  // Fetch flight results on mount
   useEffect(() => {
     async function fetchResults() {
       try {
-        const queryString = `?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&departure=${encodeURIComponent(departure)}&arrival=${encodeURIComponent(arrival)}&type=${encodeURIComponent(type)}`;
+        const queryString = `?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(
+          destination
+        )}&departure=${encodeURIComponent(departure)}&arrival=${encodeURIComponent(
+          arrival
+        )}&type=${encodeURIComponent(type)}`;
         const response = await fetch("/api/flights/search" + queryString, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -184,7 +275,7 @@ export default function FlightResultsPage() {
     setHotels(dummyHotels);
   }, [destination]);
 
-  // Toggle selection for outbound flight using the first flight's id
+  // Toggle selection for outbound flight (using first flight's id as unique identifier)
   const handleSelectOutbound = (result: FlightResult) => {
     if (selectedOutbound && selectedOutbound.flights[0].id === result.flights[0].id) {
       setSelectedOutbound(null);
@@ -202,90 +293,6 @@ export default function FlightResultsPage() {
     }
   };
 
-  // Render flight itinerary card with improved vertical layout and a clear button
-  const renderFlightCard = (
-    result: FlightResult,
-    isSelected: boolean,
-    onSelect: () => void
-  ) => {
-    const totalPrice = result.flights.reduce((sum, flight) => sum + flight.price, 0);
-    return (
-      <div
-        className={`card bg-white shadow-md p-4 cursor-pointer transition-all duration-200 ${
-          isSelected ? "border-2 border-blue-500 bg-blue-50 shadow-lg" : "border border-gray-200 hover:shadow-xl"
-        }`}
-        onClick={onSelect}
-      >
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold">
-            {result.legs === 1 ? "Direct Flight" : "Connecting Flight"}
-          </h3>
-          {isSelected && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect(); // toggle off
-              }}
-              className="btn btn-sm btn-ghost btn-square text-blue-500"
-              title="Clear selection"
-            >
-              ×
-            </button>
-          )}
-        </div>
-        <div className="space-y-2">
-  {result.flights.map((flight) => (
-    <div key={flight.id} className="border rounded-md p-2 bg-gray-50">
-      {/* Flight header: flight number on left, airline on right */}
-      <div className="flex items-center">
-        <span className="font-medium text-left w-1/2">{flight.flightNumber}</span>
-        <span className="text-sm text-gray-600 text-right w-1/2">{flight.airline.name}</span>
-      </div>
-      {/* Origin / Destination row */}
-      <div className="flex mt-1">
-        <div className="w-1/2 text-left">
-          <strong>From:</strong> {flight.origin.code} <br />
-          <small className="text-gray-500">{flight.origin.name}</small>
-        </div>
-        <div className="w-1/2 text-right">
-          <strong>To:</strong> {flight.destination.code} <br />
-          <small className="text-gray-500">{flight.destination.name}</small>
-        </div>
-      </div>
-      {/* Departure / Arrival row */}
-      <div className="flex mt-1 text-xs">
-        <div className="w-1/2 text-left">
-          <strong>Dep:</strong> {new Date(flight.departureTime).toLocaleString()}
-        </div>
-        <div className="w-1/2 text-right">
-          <strong>Arr:</strong> {new Date(flight.arrivalTime).toLocaleString()}
-        </div>
-      </div>
-      {/* Price, Status, and Seats row */}
-      <div className="flex mt-1 text-sm">
-        <div className="w-1/3 text-left">
-          <span className="font-semibold">
-            {flight.currency} {flight.price}
-          </span>
-        </div>
-        <div className="w-1/3 text-center">
-          {flight.status}
-        </div>
-        <div className="w-1/3 text-right">
-          {flight.availableSeats} seats
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-
-        <p className="text-right mt-2 text-sm font-medium">
-          Total Price: {result.flights[0].currency} {totalPrice}
-        </p>
-      </div>
-    );
-  };
-
   // Render summary card on the side (or below on mobile)
   const renderSummaryCard = () => {
     const computeTotal = (result: FlightResult | null) =>
@@ -297,7 +304,7 @@ export default function FlightResultsPage() {
     const hotelPrice = selectedHotelRoom ? selectedHotelRoom.room.price : 0;
     const grandTotal = flightsTotal + hotelPrice;
     return (
-      <div className="card bg-white shadow-xl p-4">
+      <div className="card bg-white dark:bg-base-100 shadow-xl p-4">
         <div className="card-body space-y-2">
           <h2 className="card-title">Your Selections</h2>
           {/* Flight Itinerary */}
@@ -314,7 +321,7 @@ export default function FlightResultsPage() {
                   Total: {selectedOutbound.flights[0].currency} {outboundPrice}
                 </p>
                 <button
-                  className="btn btn-error btn-xs my-1"
+                  className="btn btn-error btn-xs m-1"
                   onClick={() => setSelectedOutbound(null)}
                 >
                   Clear Outbound
@@ -336,7 +343,7 @@ export default function FlightResultsPage() {
                       Total: {selectedReturn.flights[0].currency} {returnPrice}
                     </p>
                     <button
-                      className="btn btn-error btn-xs mt-1"
+                      className="btn btn-error btn-xs m-1"
                       onClick={() => setSelectedReturn(null)}
                     >
                       Clear Return
@@ -428,7 +435,7 @@ export default function FlightResultsPage() {
             <h2 className="card-title">Hotel Suggestions for {destination}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {hotels.map((hotel) => (
-                <div key={hotel.id} className="card bg-white shadow-md">
+                <div key={hotel.id} className="card bg-white dark:bg-base-100 shadow-md">
                   <figure>
                     <img
                       src={hotel.imageUrl}
@@ -520,47 +527,59 @@ export default function FlightResultsPage() {
               <>
                 {type === "one-way" && (
                   <div className="bg-blue-50 p-4 rounded-md space-y-4">
-                    <h2 className="text-2xl font-semibold text-center mb-4">Outbound Flights</h2>
+                    <h2 className="text-2xl font-semibold text-center mb-4">
+                      Outbound Flights
+                    </h2>
                     {firstTripResults.map((result, idx) => (
                       <div key={idx} className="block w-full" onClick={() => handleSelectOutbound(result)}>
-                        {renderFlightCard(
-                          result,
-                          selectedOutbound
-                            ? selectedOutbound.flights[0].id === result.flights[0].id
-                            : false,
-                          () => handleSelectOutbound(result)
-                        )}
+                        <FlightCard
+                          result={result}
+                          isSelected={
+                            selectedOutbound
+                              ? selectedOutbound.flights[0].id === result.flights[0].id
+                              : false
+                          }
+                          onSelect={() => handleSelectOutbound(result)}
+                        />
                       </div>
                     ))}
                   </div>
                 )}
                 {type === "round-trip" && (
                   <>
-                    <div className="bg-blue-50 p-4 rounded-md space-y-4">
-                      <h2 className="text-2xl font-semibold text-center mb-4">Outbound Flights</h2>
+                    <div className="bg-blue-50 dark:bg-base-100 p-4 rounded-md space-y-4">
+                      <h2 className="text-2xl font-semibold text-center mb-4">
+                        Outbound Flights
+                      </h2>
                       {firstTripResults.map((result, idx) => (
                         <div key={idx} className="block w-full" onClick={() => handleSelectOutbound(result)}>
-                          {renderFlightCard(
-                            result,
-                            selectedOutbound
-                              ? selectedOutbound.flights[0].id === result.flights[0].id
-                              : false,
-                            () => handleSelectOutbound(result)
-                          )}
+                          <FlightCard
+                            result={result}
+                            isSelected={
+                              selectedOutbound
+                                ? selectedOutbound.flights[0].id === result.flights[0].id
+                                : false
+                            }
+                            onSelect={() => handleSelectOutbound(result)}
+                          />
                         </div>
                       ))}
                     </div>
-                    <div className="bg-green-50 p-4 rounded-md space-y-4">
-                      <h2 className="text-2xl font-semibold text-center mb-4">Return Flights</h2>
+                    <div className="bg-green-50 dark:bg-base-100 p-4 rounded-md space-y-4">
+                      <h2 className="text-2xl font-semibold text-center mb-4">
+                        Return Flights
+                      </h2>
                       {returnTripResults.map((result, idx) => (
                         <div key={idx} className="block w-full" onClick={() => handleSelectReturn(result)}>
-                          {renderFlightCard(
-                            result,
-                            selectedReturn
-                              ? selectedReturn.flights[0].id === result.flights[0].id
-                              : false,
-                            () => handleSelectReturn(result)
-                          )}
+                          <FlightCard
+                            result={result}
+                            isSelected={
+                              selectedReturn
+                                ? selectedReturn.flights[0].id === result.flights[0].id
+                                : false
+                            }
+                            onSelect={() => handleSelectReturn(result)}
+                          />
                         </div>
                       ))}
                     </div>
