@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
+import Navbar from '@/components/navbar';
 
 export default function Profile() {
   const { user, loading } = useAuth();
@@ -193,287 +193,263 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-base-200">
+        <div className="text-xl text-base-content">Loading...</div>
       </div>
     );
   }
 
   return (
     <ProtectedRoute>
-        <Navbar />
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+      <Navbar />
+      <div className="min-h-screen bg-base-200 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto bg-base-100 rounded-lg shadow-md">
+          <div className="p-6 border-b border-base-300">
+            <h1 className="text-2xl font-bold text-base-content">My Profile</h1>
+          </div>
+  
+          {/* Notification messages */}
+          {success && (
+            <div className="mx-6 mt-4 p-3 bg-success/20 text-success-content rounded-md">
+              {success}
             </div>
+          )}
+          
+          {error && (
+            <div className="mx-6 mt-4 p-3 bg-error/20 text-error-content rounded-md">
+              {error}
+            </div>
+          )}
 
-            {/* Notification messages */}
-            {success && (
-            <div className="mx-6 mt-4 p-3 bg-green-100 text-green-800 rounded-md">
-                {success}
-            </div>
-            )}
-            
-            {error && (
-            <div className="mx-6 mt-4 p-3 bg-red-100 text-red-800 rounded-md">
-                {error}
-            </div>
-            )}
-
-            <div className="p-6">
+          <div className="p-6">
             {/* Profile Picture Section */}
             <div className="mb-8 flex flex-col items-center">
-                <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-gray-200 mb-4">
+              <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-base-300 mb-4">
                 {profileImage ? (
-                    <Image 
+                  <Image 
                     src={profileImage}
                     alt={`${formData.firstName}'s profile`}
                     fill
                     className="object-cover"
-                    />
+                  />
                 ) : (
-                    <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                    <span className="text-4xl font-bold text-gray-500">
-                        {formData.firstName.charAt(0)}{formData.lastName.charAt(0)}
+                  <div className="w-full h-full bg-base-300 flex items-center justify-center">
+                    <span className="text-4xl font-bold text-base-content/70">
+                      {formData.firstName.charAt(0)}{formData.lastName.charAt(0)}
                     </span>
-                    </div>
+                  </div>
                 )}
-                </div>
-                
-                <form onSubmit={handleImageSubmit} className="flex flex-col items-center">
-                <label htmlFor="profile-image" className="cursor-pointer mb-2 text-sm font-medium text-blue-600 hover:text-blue-500">
-                    {profileImage ? 'Change profile picture' : 'Upload profile picture'}
+              </div>
+              
+              <form onSubmit={handleImageSubmit} className="flex flex-col items-center">
+                <label htmlFor="profile-image" className="cursor-pointer mb-2 text-sm font-medium text-primary hover:text-primary-focus">
+                  {profileImage ? 'Change profile picture' : 'Upload profile picture'}
                 </label>
                 <input
-                    id="profile-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
+                  id="profile-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
                 />
                 
                 {imageFile && (
-                    <button 
+                  <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="mt-2 px-4 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-500 disabled:bg-blue-300"
-                    >
+                    className="mt-2 px-4 py-1 bg-primary text-primary-content text-sm rounded-md hover:bg-primary-focus disabled:bg-primary/50"
+                  >
                     {isSubmitting ? 'Uploading...' : 'Save Picture'}
-                    </button>
+                  </button>
                 )}
-                </form>
+              </form>
             </div>
 
             {/* Tab Navigation */}
-            <div className="border-b border-gray-200 mb-6">
-                <nav className="flex -mb-px">
+            <div className="border-b border-base-300 mb-6">
+              <nav className="flex -mb-px">
                 <button 
-                    onClick={() => setActiveTab('details')}
-                    className={`mr-8 py-2 border-b-2 ${
+                  onClick={() => setActiveTab('details')}
+                  className={`mr-8 py-2 border-b-2 ${
                     activeTab === 'details' 
-                        ? 'border-blue-500 text-blue-600' 
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                      ? 'border-primary text-primary' 
+                      : 'border-transparent text-base-content/70 hover:text-base-content hover:border-base-300'
+                  }`}
                 >
-                    Personal Details
+                  Personal Details
                 </button>
                 <button 
-                    onClick={() => setActiveTab('password')}
-                    className={`py-2 border-b-2 ${
+                  onClick={() => setActiveTab('password')}
+                  className={`py-2 border-b-2 ${
                     activeTab === 'password' 
-                        ? 'border-blue-500 text-blue-600' 
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                      ? 'border-primary text-primary' 
+                      : 'border-transparent text-base-content/70 hover:text-base-content hover:border-base-300'
+                  }`}
                 >
-                    Change Password
+                  Change Password
                 </button>
-                </nav>
+              </nav>
             </div>
 
             {/* Profile Details Tab */}
             {activeTab === 'details' && (
-                <div>
+              <div>
                 <form onSubmit={handleDetailsSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="firstName" className="block text-sm font-medium text-base-content mb-1">
                         First Name
-                        </label>
-                        <input
+                      </label>
+                      <input
                         id="firstName"
                         name="firstName"
                         type="text"
-                        required
-                        readOnly={!isEditing}
                         value={formData.firstName}
                         onChange={handleDetailsChange}
-                        className={`block w-full rounded-md border-0 p-2.5 text-gray-900 ring-1 ring-inset ${
-                            isEditing 
-                            ? 'ring-gray-300 focus:ring-2 focus:ring-blue-600'
-                            : 'bg-gray-50 ring-gray-200'
-                        }`}
-                        />
+                        disabled={!isEditing}
+                        className="block w-full p-2 border border-base-300 rounded-md bg-base-100 text-base-content disabled:bg-base-200"
+                      />
                     </div>
-                    
                     <div>
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="lastName" className="block text-sm font-medium text-base-content mb-1">
                         Last Name
-                        </label>
-                        <input
+                      </label>
+                      <input
                         id="lastName"
                         name="lastName"
                         type="text"
-                        required
-                        readOnly={!isEditing}
                         value={formData.lastName}
                         onChange={handleDetailsChange}
-                        className={`block w-full rounded-md border-0 p-2.5 text-gray-900 ring-1 ring-inset ${
-                            isEditing 
-                            ? 'ring-gray-300 focus:ring-2 focus:ring-blue-600'
-                            : 'bg-gray-50 ring-gray-200'
-                        }`}
-                        />
+                        disabled={!isEditing}
+                        className="block w-full p-2 border border-base-300 rounded-md bg-base-100 text-base-content disabled:bg-base-200"
+                      />
                     </div>
-                    
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address
-                        </label>
-                        <input
+                      <label htmlFor="email" className="block text-sm font-medium text-base-content mb-1">
+                        Email
+                      </label>
+                      <input
                         id="email"
                         name="email"
                         type="email"
-                        readOnly
                         value={formData.email}
-                        className="block w-full rounded-md border-0 p-2.5 text-gray-900 bg-gray-50 ring-1 ring-inset ring-gray-200"
-                        />
-                        <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                        disabled={true}
+                        className="block w-full p-2 border border-base-300 rounded-md bg-base-200 text-base-content/70"
+                      />
+                      <p className="text-xs text-base-content/60 mt-1">Email cannot be changed</p>
                     </div>
-                    
                     <div>
-                        <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="phoneNumber" className="block text-sm font-medium text-base-content mb-1">
                         Phone Number
-                        </label>
-                        <input
+                      </label>
+                      <input
                         id="phoneNumber"
                         name="phoneNumber"
                         type="tel"
-                        readOnly={!isEditing}
                         value={formData.phoneNumber}
                         onChange={handleDetailsChange}
-                        className={`block w-full rounded-md border-0 p-2.5 text-gray-900 ring-1 ring-inset ${
-                            isEditing 
-                            ? 'ring-gray-300 focus:ring-2 focus:ring-blue-600'
-                            : 'bg-gray-50 ring-gray-200'
-                        }`}
-                        />
+                        disabled={!isEditing}
+                        className="block w-full p-2 border border-base-300 rounded-md bg-base-100 text-base-content disabled:bg-base-200"
+                      />
                     </div>
-                    </div>
-                    
+                  </div>
+                  
+                  <div className="flex justify-end space-x-4">
                     {!isEditing ? (
-                    <button
+                      <button
                         type="button"
                         onClick={() => setIsEditing(true)}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500"
-                    >
+                        className="px-4 py-2 bg-primary text-primary-content rounded-md hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
                         Edit Profile
-                    </button>
+                      </button>
                     ) : (
-                    <div className="flex space-x-4">
+                      <>
                         <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 disabled:bg-blue-300"
+                          type="button"
+                          onClick={() => setIsEditing(false)}
+                          className="px-4 py-2 border border-base-300 text-base-content rounded-md hover:bg-base-200"
                         >
-                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                          Cancel
                         </button>
                         <button
-                        type="button"
-                        onClick={() => {
-                            setIsEditing(false);
-                            // Reset form to original user data
-                            if (user) {
-                            setFormData({
-                                firstName: user.first_name || '',
-                                lastName: user.last_name || '',
-                                email: user.email || '',
-                                phoneNumber: user.phone_number || '',
-                            });
-                            }
-                        }}
-                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="px-4 py-2 bg-primary text-primary-content rounded-md hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-primary/50"
                         >
-                        Cancel
+                          {isSubmitting ? 'Saving...' : 'Save Changes'}
                         </button>
-                    </div>
+                      </>
                     )}
+                  </div>
                 </form>
-                </div>
+              </div>
             )}
 
             {/* Change Password Tab */}
             {activeTab === 'password' && (
-                <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              <form onSubmit={handlePasswordSubmit} className="space-y-6">
                 <div>
-                    <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="currentPassword" className="block text-sm font-medium text-base-content mb-1">
                     Current Password
-                    </label>
-                    <input
+                  </label>
+                  <input
                     id="currentPassword"
                     name="currentPassword"
                     type="password"
-                    required
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
-                    className="block w-full rounded-md border-0 p-2.5 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600"
-                    />
+                    required
+                    className="block w-full p-2 border border-base-300 rounded-md bg-base-100 text-base-content"
+                  />
                 </div>
                 
                 <div>
-                    <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-base-content mb-1">
                     New Password
-                    </label>
-                    <input
+                  </label>
+                  <input
                     id="newPassword"
                     name="newPassword"
                     type="password"
-                    required
-                    minLength={8}
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
-                    className="block w-full rounded-md border-0 p-2.5 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">Password must be at least 8 characters</p>
+                    required
+                    minLength={8}
+                    className="block w-full p-2 border border-base-300 rounded-md bg-base-100 text-base-content"
+                  />
+                  <p className="text-xs text-base-content/60 mt-1">Password must be at least 8 characters long</p>
                 </div>
                 
                 <div>
-                    <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-base-content mb-1">
                     Confirm New Password
-                    </label>
-                    <input
+                  </label>
+                  <input
                     id="confirmNewPassword"
                     name="confirmNewPassword"
                     type="password"
-                    required
                     value={passwordData.confirmNewPassword}
                     onChange={handlePasswordChange}
-                    className="block w-full rounded-md border-0 p-2.5 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600"
-                    />
+                    required
+                    className="block w-full p-2 border border-base-300 rounded-md bg-base-100 text-base-content"
+                  />
                 </div>
                 
-                <button
+                <div className="flex justify-end">
+                  <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 disabled:bg-blue-300"
-                >
+                    className="px-4 py-2 bg-primary text-primary-content rounded-md hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-primary/50"
+                  >
                     {isSubmitting ? 'Changing Password...' : 'Change Password'}
-                </button>
-                </form>
+                  </button>
+                </div>
+              </form>
             )}
-            </div>
+          </div>
         </div>
-        </div>
+      </div>
     </ProtectedRoute>
   );
 }
