@@ -70,7 +70,20 @@ export async function GET(req) {
         };
 
         const reservations = await prisma.hotelReservation.findMany({
-            where: where
+            where: where,
+            include: {
+                reserver: {
+                    select: {
+                        first_name: true,
+                        last_name: true
+                    }
+                },
+                roomType: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
         });
 
         return NextResponse.json(reservations, { status: 200 });

@@ -56,13 +56,22 @@ export async function POST(req) {
 
         // Use validated data
         const validData = validationResult.data;
+        
+        // Declare location variable outside the try block to maintain scope
+        let location;
 
         try {
-            // check if location exists
-            const location = await prisma.location.findFirst({
+            // check if location exists with case insensitive search
+            location = await prisma.location.findFirst({
                 where: {
-                    city: validData.city,
-                    country: validData.country
+                    city: {
+                        equals: validData.city,
+                        mode: 'insensitive'
+                    },
+                    country: {
+                        equals: validData.country,
+                        mode: 'insensitive'
+                    }
                 }
             });
 
@@ -90,10 +99,7 @@ export async function POST(req) {
                 },
                 Location: {
                     connect: {
-                        unique_location: {
-                            city: validData.city,
-                            country: validData.country
-                        }
+                        id: location.id // Connect using the found location's ID
                     }
                 },
                 address: validData.address,
