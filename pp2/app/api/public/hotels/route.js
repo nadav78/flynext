@@ -46,7 +46,7 @@ export async function GET(req) {
 
     const filters = validationResult.data;
     const { checkin, checkout, price_min, price_max, city, country, ...hotelFilters } = filters;
-
+    console.log(city)
     try {
         // Basic where clause for hotel filters
         const where = { ...hotelFilters };
@@ -56,8 +56,9 @@ export async function GET(req) {
             where: {
                 ...where,
                 Location: {
-                    ...(city ? { city: city } : {}),
-                    ...(country ? { country: country } : {})
+                    // Updated to use case-insensitive search for city and country
+                    ...(city ? { city: { equals: city, mode: 'insensitive' } } : {}),
+                    ...(country ? { country: { equals: country, mode: 'insensitive' } } : {})
                 },
                 HotelRoomType: {
                     some: {
