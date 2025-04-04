@@ -1,159 +1,137 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Navbar from "../../components/Navbar";
-
-// Simulated fetch function. In your app, import this from your utility module.
-async function getAFSFlightDetailsById(flightId: string) {
-  // In production, this would call an API. Here we simulate with a hardcoded response.
-  return {
-    airline: {
-      code: "SK",
-      name: "Scandinavian Airlines",
-    },
-    arrivalTime: "2024-11-15T21:20:00.000Z",
-    availableSeats: 0,
-    currency: "CAD",
-    departureTime: "2024-11-15T16:15:00.000Z",
-    destination: {
-      city: "Zurich",
-      code: "ZRH",
-      country: "Switzerland",
-      name: "Zurich Airport",
-    },
-    destinationId: "2bcb7925-96aa-4de8-9ec1-3622e954c0b6",
-    duration: 305,
-    flightNumber: "SK952",
-    id: flightId,
-    origin: {
-      city: "Stockholm",
-      code: "ARN",
-      country: "Sweden",
-      name: "Stockholm Arlanda Airport",
-    },
-    originId: "7d3cd81e-5b33-4235-aa4a-8955237e729b",
-    price: 301,
-    status: "SCHEDULED",
-  };
-}
+import Navbar from "../../components/navbar";
+import { getAFSFlightDetailsById } from "../../utils/get-afs";
 
 export default function BookingPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Retrieve query parameters passed to the page
+  // Query parameters from booking handler
   const outboundId = searchParams.get("outbound") || "";
   const returnId = searchParams.get("return") || "";
   const hotelId = searchParams.get("hotel") || "";
   const roomId = searchParams.get("room") || "";
   const checkin = searchParams.get("checkin") || "";
 
-  // State to hold flight details
+  // Flight details state
   const [outboundFlight, setOutboundFlight] = useState<any>(null);
   const [returnFlight, setReturnFlight] = useState<any>(null);
 
-  // Fetch flight details when the outbound or return IDs change
   useEffect(() => {
     if (outboundId) {
       getAFSFlightDetailsById(outboundId)
         .then((data) => setOutboundFlight(data))
-        .catch((err) => console.error("Error fetching outbound flight:", err));
+        .catch((err) =>
+          console.error("Error fetching outbound flight details:", err)
+        );
     }
     if (returnId) {
       getAFSFlightDetailsById(returnId)
         .then((data) => setReturnFlight(data))
-        .catch((err) => console.error("Error fetching return flight:", err));
+        .catch((err) =>
+          console.error("Error fetching return flight details:", err)
+        );
     }
   }, [outboundId, returnId]);
 
-  // Compute totals. Here we simply sum the flight prices.
+  // Compute totals – replace these with real calculations as needed.
   const flightsTotal =
     (outboundFlight ? outboundFlight.price : 0) +
     (returnFlight ? returnFlight.price : 0);
-  // For hotel total, we use a placeholder value if hotel/room data exists.
   const hotelTotal = hotelId && roomId ? 350 : 0;
   const grandTotal = flightsTotal + hotelTotal;
 
   return (
     <main className="min-h-screen bg-base-200">
       <Navbar />
-      <div className="container mx-auto p-4 space-y-8">
+      <div className="container mx-auto p-6 space-y-10">
         {/* Flight Itinerary Card */}
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <h2 className="card-title">Flight Itinerary</h2>
-            <div className="space-y-4">
+            <h2 className="card-title text-2xl mb-4">Flight Itinerary</h2>
+            <div className="divide-y divide-gray-300">
+              {/* Outbound Flight */}
               {outboundFlight ? (
-                <div>
-                  <h3 className="text-lg font-semibold">Outbound Flight</h3>
-                  <p>
-                    <strong>Flight Number:</strong> {outboundFlight.flightNumber}
-                  </p>
-                  <p>
-                    <strong>Airline:</strong> {outboundFlight.airline.name} (
-                    {outboundFlight.airline.code})
-                  </p>
-                  <p>
-                    <strong>From:</strong> {outboundFlight.origin.name} (
-                    {outboundFlight.origin.code}), {outboundFlight.origin.city}
-                  </p>
-                  <p>
-                    <strong>To:</strong> {outboundFlight.destination.name} (
-                    {outboundFlight.destination.code}),{" "}
-                    {outboundFlight.destination.city}
-                  </p>
-                  <p>
-                    <strong>Departure:</strong>{" "}
-                    {new Date(outboundFlight.departureTime).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Arrival:</strong>{" "}
-                    {new Date(outboundFlight.arrivalTime).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Price:</strong> {outboundFlight.currency}{" "}
-                    {outboundFlight.price}
-                  </p>
+                <div className="py-4 flex flex-col md:flex-row md:justify-between">
+                  <div>
+                    <h3 className="text-xl font-semibold">Outbound Flight</h3>
+                    <p>
+                      <span className="font-medium">Flight:</span>{" "}
+                      {outboundFlight.flightNumber} (
+                      {outboundFlight.airline.name})
+                    </p>
+                    <p>
+                      <span className="font-medium">From:</span>{" "}
+                      {outboundFlight.origin.name} ({outboundFlight.origin.code}
+                      ), {outboundFlight.origin.city}
+                    </p>
+                    <p>
+                      <span className="font-medium">To:</span>{" "}
+                      {outboundFlight.destination.name} (
+                      {outboundFlight.destination.code}),{" "}
+                      {outboundFlight.destination.city}
+                    </p>
+                  </div>
+                  <div className="mt-4 md:mt-0 text-right">
+                    <p>
+                      <span className="font-medium">Departure:</span>{" "}
+                      {new Date(outboundFlight.departureTime).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Arrival:</span>{" "}
+                      {new Date(outboundFlight.arrivalTime).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Price:</span>{" "}
+                      {outboundFlight.currency} {outboundFlight.price}
+                    </p>
+                  </div>
                 </div>
               ) : (
-                <p>Loading outbound flight details...</p>
+                <p className="py-4">Loading outbound flight details...</p>
               )}
+              {/* Return Flight */}
               {returnId && (
                 <>
                   {returnFlight ? (
-                    <div>
-                      <h3 className="text-lg font-semibold">Return Flight</h3>
-                      <p>
-                        <strong>Flight Number:</strong> {returnFlight.flightNumber}
-                      </p>
-                      <p>
-                        <strong>Airline:</strong> {returnFlight.airline.name} (
-                        {returnFlight.airline.code})
-                      </p>
-                      <p>
-                        <strong>From:</strong> {returnFlight.origin.name} (
-                        {returnFlight.origin.code}), {returnFlight.origin.city}
-                      </p>
-                      <p>
-                        <strong>To:</strong> {returnFlight.destination.name} (
-                        {returnFlight.destination.code}),{" "}
-                        {returnFlight.destination.city}
-                      </p>
-                      <p>
-                        <strong>Departure:</strong>{" "}
-                        {new Date(returnFlight.departureTime).toLocaleString()}
-                      </p>
-                      <p>
-                        <strong>Arrival:</strong>{" "}
-                        {new Date(returnFlight.arrivalTime).toLocaleString()}
-                      </p>
-                      <p>
-                        <strong>Price:</strong> {returnFlight.currency}{" "}
-                        {returnFlight.price}
-                      </p>
+                    <div className="py-4 flex flex-col md:flex-row md:justify-between">
+                      <div>
+                        <h3 className="text-xl font-semibold">Return Flight</h3>
+                        <p>
+                          <span className="font-medium">Flight:</span>{" "}
+                          {returnFlight.flightNumber} (
+                          {returnFlight.airline.name})
+                        </p>
+                        <p>
+                          <span className="font-medium">From:</span>{" "}
+                          {returnFlight.origin.name} (
+                          {returnFlight.origin.code}), {returnFlight.origin.city}
+                        </p>
+                        <p>
+                          <span className="font-medium">To:</span>{" "}
+                          {returnFlight.destination.name} (
+                          {returnFlight.destination.code}), {returnFlight.destination.city}
+                        </p>
+                      </div>
+                      <div className="mt-4 md:mt-0 text-right">
+                        <p>
+                          <span className="font-medium">Departure:</span>{" "}
+                          {new Date(returnFlight.departureTime).toLocaleString()}
+                        </p>
+                        <p>
+                          <span className="font-medium">Arrival:</span>{" "}
+                          {new Date(returnFlight.arrivalTime).toLocaleString()}
+                        </p>
+                        <p>
+                          <span className="font-medium">Price:</span>{" "}
+                          {returnFlight.currency} {returnFlight.price}
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    <p>Loading return flight details...</p>
+                    <p className="py-4">Loading return flight details...</p>
                   )}
                 </>
               )}
@@ -164,17 +142,17 @@ export default function BookingPage() {
         {/* Hotel & Room Selection Card */}
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <h2 className="card-title">Hotel &amp; Room Selection</h2>
+            <h2 className="card-title text-2xl mb-4">Hotel &amp; Room Selection</h2>
             {hotelId && roomId ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <p>
-                  <strong>Hotel ID:</strong> {hotelId}
+                  <span className="font-medium">Hotel ID:</span> {hotelId}
                 </p>
                 <p>
-                  <strong>Room ID:</strong> {roomId}
+                  <span className="font-medium">Room ID:</span> {roomId}
                 </p>
                 <p>
-                  <strong>Check-in Date:</strong> {checkin}
+                  <span className="font-medium">Check-in Date:</span> {checkin}
                 </p>
               </div>
             ) : (
@@ -184,26 +162,28 @@ export default function BookingPage() {
         </div>
 
         {/* Summary Card */}
-        <div className="card shadow-xl bg-base-100">
+        <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <h2 className="card-title">Total Summary</h2>
-            <p>
-              <strong>Flights Total:</strong> ${flightsTotal}
-            </p>
-            <p>
-              <strong>Hotel Total:</strong> ${hotelTotal}
-            </p>
-            <p className="font-bold text-xl">
-              <strong>Grand Total:</strong> ${grandTotal}
-            </p>
+            <h2 className="card-title text-2xl mb-4">Total Summary</h2>
+            <div className="space-y-2">
+              <p>
+                <span className="font-medium">Flights Total:</span> ${flightsTotal}
+              </p>
+              <p>
+                <span className="font-medium">Hotel Total:</span> ${hotelTotal}
+              </p>
+              <p className="font-bold text-xl">
+                <span className="font-medium">Grand Total:</span> ${grandTotal}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Checkout Card */}
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <h2 className="card-title">Checkout</h2>
-            <p>
+            <h2 className="card-title text-2xl mb-4">Checkout</h2>
+            <p className="mb-4">
               Please review your booking details above. When you're ready, proceed
               to payment.
             </p>

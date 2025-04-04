@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Navbar from "../../../components/Navbar";
+import Navbar from "../../../components/navbar";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../../contexts/auth-context";
-import Toast from "../../../components/Toast";
 
 // --------------------
 // Types
@@ -275,11 +274,11 @@ export default function FlightResultsPage() {
         }
         const queryString = `?${params.toString()}`;
         console.log("Fetching hotels with query:", queryString);
-        const response = await fetch("/api/hotels/public" + queryString, {
+        const response = await fetch("/api/public/hotels" + queryString, {
           method: "GET",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+            "Authorization": `Bearer ${localStorage.getItem("accessToken")}` // ??
           },
         });
         if (!response.ok) {
