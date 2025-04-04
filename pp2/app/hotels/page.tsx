@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from "react"; 
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/Navbar";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 
