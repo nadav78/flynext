@@ -117,30 +117,26 @@ const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
     console.log(formData.arrival);
     console.log(formData.type);
     console.log("is formdata.arrival empty?", formData.arrival === "");
-    try {
-      const queryString = `?origin=${formData.origin.code}&destination=${formData.destination.code}&departure=${formData.departure}&arrival=${formData.arrival}&type=${formData.type}`;
-      const url = "/api/flights/search" + queryString;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
 
-      if (!response.ok) {
-        const errData = await response.json();
-        setError(errData.error || "An error occurred during the search.");
-        return;
-      }
+    const queryString = `?origin=${formData.origin.code}&destination=${formData.destination.code}&departure=${formData.departure}&arrival=${formData.arrival}&type=${formData.type}`;
+    // const url = "/api/flights/search" + queryString;
+    // const response = await fetch(url, {
+    //   method: "GET",
+    //   headers: { "Content-Type": "application/json" },
+    // });
 
-      // Optionally, get search results from the response.
-      const result = await response.json();
-      console.log("Search results:", result);
+    // if (!response.ok) {
+    //   const errData = await response.json();
+    //   setError(errData.error || "An error occurred during the search.");
+    //   return;
+    // }
 
-      // Redirect to the results page.
-      router.push("/flights/results");
-    } catch (err) {
-      console.error(err);
-      setError("An error occurred while searching for flights.");
-    }
+    // // Optionally, get search results from the response.
+    // const result = await response.json();
+    // console.log("Search results:", result);
+
+    // Redirect to the results page.
+    router.push("/flights/results" + queryString);
   };
 
   return (
