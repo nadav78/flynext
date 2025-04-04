@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Combobox } from "@headlessui/react";
 import { useRouter } from "next/navigation";
-import { Airport } from "../flights/page";
+import { Airport } from "../app/flights/page";
 
 type FlightsFormProps = {
   airports: Airport[];
