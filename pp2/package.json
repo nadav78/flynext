@@ -19,6 +19,7 @@
     "jsonwebtoken": "^9.0.2",
     "next": "^15.2.0",
     "node-fetch": "^3.3.2",
+    "pdf-lib": "^1.17.1",
     "pdfkit": "^0.16.0",
     "postcss": "^8.5.3",
     "prisma-erd-generator": "^2.0.4",

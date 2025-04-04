@@ -15,7 +15,9 @@ const protectedPaths = [
   '/api/flights/book',
   '/api/flights/verify',
   '/api/hotels',     
-  '/api/booking',     
+  '/api/booking',  
+  '/api/trips',   
+  '/api/invoice',    
 ];
 
 export async function middleware(request) {
@@ -65,5 +67,9 @@ export const config = {
     '/api/hotels/:path*',  
     '/api/booking',       
     '/api/booking/:path*',
+    '/api/trips',
+    '/api/trips/:path*',
+    '/api/invoice',
+    '/api/invoice/:path*',
   ],
 };
