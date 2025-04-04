@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Navbar from '@/components/Navbar';
 
 export default function Profile() {
   const { user, loading } = useAuth();
@@ -200,6 +201,7 @@ export default function Profile() {
 
   return (
     <ProtectedRoute>
+        <Navbar />
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto bg-white rounded-lg shadow">
             <div className="p-6 border-b border-gray-200">
