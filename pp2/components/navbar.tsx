@@ -1,9 +1,11 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "../contexts/auth-context";
 
 const Navbar: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
+  const { user, loading, logout } = useAuth();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
@@ -11,6 +13,15 @@ const Navbar: React.FC = () => {
 
   const handleToggle = () => {
     setDarkMode((prev) => !prev);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // You could add a notification or redirect here if needed
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   return (
@@ -83,8 +94,41 @@ const Navbar: React.FC = () => {
               onChange={handleToggle}
               className="custom-toggle"
             />
-            <Link href="/login" className="btn btn-ghost">Login</Link>
-            <Link href="/register" className="btn btn-ghost">Register</Link>
+            
+            {loading ? (
+              <span className="loading loading-spinner loading-md"></span>
+            ) : user ? (
+              <div className="dropdown dropdown-end">
+                <label tabIndex={0} className="btn btn-ghost">
+                  <div className="flex items-center">
+                    {user.profileImage ? (
+                      <img 
+                        src={user.profileImage} 
+                        alt="Profile" 
+                        className="w-8 h-8 rounded-full mr-2" 
+                      />
+                    ) : (
+                      <div className="avatar placeholder mr-2">
+                        <div className="bg-secondary text-secondary-content rounded-full w-8">
+                          <span>{user.first_name?.charAt(0)}{user.last_name?.charAt(0)}</span>
+                        </div>
+                      </div>
+                    )}
+                    <span>{user.first_name}</span>
+                  </div>
+                </label>
+                <ul tabIndex={0} className="menu dropdown-content z-[1] p-2 shadow bg-primary text-primary-content rounded-box w-52 mt-4">
+                  <li><Link href="/profile">Profile</Link></li>
+                  <li><Link href="/bookings">My Bookings</Link></li>
+                  <li><button onClick={handleLogout}>Logout</button></li>
+                </ul>
+              </div>
+            ) : (
+              <>
+                <Link href="/login" className="btn btn-ghost">Login</Link>
+                <Link href="/register" className="btn btn-ghost">Register</Link>
+              </>
+            )}
           </div>
         </div>
       </div>
