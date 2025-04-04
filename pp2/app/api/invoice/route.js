@@ -1,121 +1,112 @@
-import PDFDocument from 'pdfkit';
-import fs from 'fs';
-import path from 'path';
-import prisma from '@/prisma';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
-// part of this function was created using assistance from chatgpt
-export default async function POST(req) {
-  if(req.method !== 'POST') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
-  }
-  
-  // get tripid from query
-  const tripId = req.query.tripId; 
+const prisma = new PrismaClient();
 
-  if (!tripId) {
-    return NextResponse.json({ error: 'Trip ID required' }, { status: 400 });
-  }
+export async function POST(req) {
+  try {
+    // Get user ID from middleware
+    const userId = req.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const tripItinerary = await prisma.tripItinerary.findUnique({
-    where: { id: tripId },
-    include: {
-      HotelReservation: {
-        include: {
-          hotel: true,
-          roomType: true,
+    // Get trip ID from URL params
+    const url = new URL(req.url);
+    const tripId = url.searchParams.get('tripId');
+    if (!tripId) {
+      return NextResponse.json({ error: 'Trip ID required' }, { status: 400 });
+    }
+
+    // Find trip itinerary and verify ownership
+    const tripItinerary = await prisma.tripItinerary.findUnique({
+      where: { 
+        id: parseInt(tripId, 10),
+        userId: parseInt(userId, 10)
+      },
+      include: {
+        user: true,
+        HotelReservation: {
+          include: {
+            hotel: true,
+            roomType: true,
+          },
         },
       },
-    },
-  });
-
-  if (!tripItinerary) {
-    return NextResponse .json({ error: 'Trip not found' }, { status: 404 });
-  }
-
-  const doc = new PDFDocument();
-  // invoices stored in pp1/public/invoices
-  const invoiceDir = path.join(process.cwd(), 'public', 'invoices');
-
-  // check invoice directory exists else create it
-  if (!fs.existsSync(invoiceDir)) {
-    fs.mkdirSync(invoiceDir, { recursive: true });
-  }
-
-  const invoiceFileName = `invoice_${tripItinerary.id}.pdf`;
-  const invoiceFullPath = path.join(invoiceDir, invoiceFileName);
-  const writeStream = fs.createWriteStream(invoiceFullPath);
-  doc.pipe(writeStream);
-
-  // basic details
-  doc.fontSize(20).text('Trip Invoice', { align: 'center' });
-  doc.moveDown();
-  doc.fontSize(14).text(`Booking Reference: ${tripItinerary.afs_booking_reference || 'N/A'}`);
-  doc.text(`Total Price: ${tripItinerary.total_price || 'N/A'}`);
-  doc.text(`Date of invoice: ${tripItinerary.created_at.toDateString()}`);
-  doc.moveDown();
-  doc.fontSize(16).text('Contact Information', { underline: true });
-  doc.moveDown();
-  doc.text(`Full Name: ${tripItinerary.firstName} ${tripItinerary.lastName}`);
-  doc.text(`Email: ${tripItinerary.email}`);
-  doc.text(`Phone: ${tripItinerary.phone_number}`);
-  doc.moveDown();
-
-  if (tripItinerary.HotelReservation.length > 0) {
-    doc.fontSize(16).text('Hotel Reservations', { underline: true });
-    doc.moveDown();
-
-    tripItinerary.HotelReservation.forEach((reservation, index) => {
-      doc.fontSize(14).text(`Reservation ${index + 1}`, { underline: true });
-      
-      // hotel details
-      doc.text(`Hotel Name: ${reservation.hotel.name}`);
-      if (reservation.hotel.address) doc.text(`Address: ${reservation.hotel.address}`);
-      if (reservation.hotel.location) doc.text(`Location: ${reservation.hotel.location}`);
-      if (reservation.hotel.star_rating) doc.text(`Star Rating: ${reservation.hotel.star_rating}`);
-      if (reservation.hotel.description) doc.text(`Description: ${reservation.hotel.description}`);
-      if (reservation.hotel.website) doc.text(`Website: ${reservation.hotel.website}`);
-      if (reservation.hotel.contact_email) doc.text(`Contact Email: ${reservation.hotel.contact_email}`);
-      if (reservation.hotel.contact_phone) doc.text(`Contact Phone: ${reservation.hotel.contact_phone}`);
-      if (reservation.hotel.amenities) doc.text(`Amenities: ${reservation.hotel.amenities}`);
-      doc.moveDown();
-
-      // room type details
-      doc.text(`Room Type: ${reservation.roomType.name}`);
-      if (reservation.roomType.description) doc.text(`Room Description: ${reservation.roomType.description}`);
-      if (reservation.roomType.price_per_night) doc.text(`Price per Night: ${reservation.roomType.price_per_night}`);
-      if (reservation.roomType.amenities) doc.text(`Room Amenities: ${reservation.roomType.amenities}`);
-      doc.text(`Room Count: ${reservation.roomType.room_count}`);
-      doc.text(`Max Occupancy: ${reservation.roomType.max_occupancy}`);
-      doc.moveDown();
-
-      // reservation details
-      doc.text(`Check-in: ${new Date(reservation.check_in_time).toLocaleString()}`);
-      doc.text(`Check-out: ${new Date(reservation.check_out_time).toLocaleString()}`);
-      doc.text(`Reservation Valid: ${reservation.is_valid ? 'Yes' : 'No'}`);
-      doc.moveDown();
-      doc.moveDown();
-    });
-  } else {
-    doc.text('No hotel reservations found for this trip.');
-  }
-
-  doc.end();
-
-  // when finished update db 
-  writeStream.on('finish', async () => {
-    const invoiceUrl = `/invoices/${invoiceFileName}`;
-
-    await prisma.tripItinerary.update({
-      where: { id: tripItinerary.id },
-      data: { invoice_url: invoiceUrl },
     });
 
-    return NextResponse.json({ invoiceUrl }, { status: 200 });
-  });
+    if (!tripItinerary) {
+      return NextResponse.json({ error: 'Trip not found or unauthorized' }, { status: 404 });
+    }
 
-  writeStream.on('error', (err) => {
-    console.error('Error writing PDF:', err);
-    return NextResponse.json({ error: 'Error writing PDF' }, { status: 500 });
-  });
+    // Create a new PDF document
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
+
+    // Set fonts
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 12;
+    const textColor = rgb(0, 0, 0);
+
+    // Helper function to add text
+    let y = 750; // Starting Y position for content
+    const lineHeight = 14;
+    const margin = 50;
+
+    const addText = (text, options = {}) => {
+      page.drawText(text, {
+        x: margin,
+        y,
+        font,
+        size: fontSize,
+        color: textColor,
+        ...options,
+      });
+      y -= lineHeight;
+    };
+
+    // Add content to PDF
+    addText('Trip Invoice', { size: 20, align: 'center' });
+    addText(`Booking Reference: ${tripItinerary.afs_booking_reference || 'N/A'}`);
+    addText(`Total Price: ${tripItinerary.total_price || 'N/A'}`);
+    addText(`Date of invoice: ${tripItinerary.created_at.toDateString()}`);
+    addText('Contact Information', { size: 16 });
+    addText(`Full Name: ${tripItinerary.user.first_name || ''} ${tripItinerary.user.last_name || ''}`);
+    addText(`Email: ${tripItinerary.user.email || ''}`);
+    addText(`Phone: ${tripItinerary.user.phone_number || ''}`);
+
+    if (tripItinerary.HotelReservation.length > 0) {
+      addText('Hotel Reservations', { size: 16 });
+      tripItinerary.HotelReservation.forEach((reservation, index) => {
+        addText(`Reservation ${index + 1}`, { size: 14 });
+        addText(`Hotel Name: ${reservation.hotel.name}`);
+        addText(`Room Type: ${reservation.roomType.name}`);
+        addText(`Check-in: ${new Date(reservation.check_in_time).toLocaleString()}`);
+        addText(`Check-out: ${new Date(reservation.check_out_time).toLocaleString()}`);
+      });
+    } else {
+      addText('No hotel reservations found for this trip.');
+    }
+
+    // Serialize the PDF to bytes (Uint8Array)
+    const pdfBytes = await pdfDoc.save();
+
+    // Convert Uint8Array to ArrayBuffer
+    const pdfBuffer = pdfBytes.buffer;
+
+    // Return PDF file directly
+    return new NextResponse(pdfBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=invoice_${tripItinerary.id}.pdf`,
+      },
+    });
+  } catch (error) {
+    console.error('Error generating invoice:', error);
+    return NextResponse.json({ error: "Error generating invoice" }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
 }

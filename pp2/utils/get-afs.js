@@ -23,6 +23,30 @@ export async function getAPIKey() {
   }
 }
 
+export async function getAFSFlightDetailsById(flightId) {
+  const apiKey =  await getAPIKey();
+  const url = `${BASE_URL}/api/flights/${flightId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+      },
+    });
+    if (!response.ok) {
+      console.error("Error fetching flight details:", response.status, response.statusText, await response.text());
+      throw new Error(`AFS API error`);
+    }
+    return await response.json();
+  }
+  catch (error) {
+    console.error("Error fetching flight details:", error);
+    return { error: "Failed to fetch flight details" };
+  }
+}
+
 export async function cancelFlight(bookingReference, lastName) {
   const apiKey = await getAPIKey();
   const url = `${BASE_URL}/api/bookings/cancel`;
@@ -404,13 +428,15 @@ export async function populateAirports() {
 
 export async function getInitialData() {
   try {
+    await prisma.hotelReservation.deleteMany();
+    await prisma.hotelRoomType.deleteMany();
+    await prisma.hotel.deleteMany();
     await prisma.airport.deleteMany();
     await prisma.location.deleteMany();
 
-    await populateLocations()
-    await populateAirports()
+    await populateLocations();
+    await populateAirports();
 
-    // console.log("Initial data populated successfully");
     return { success: "Initial data populated successfully" };
   } catch (error) {
     console.error("Error fetching initial data:", error);
