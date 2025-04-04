@@ -1,25 +1,23 @@
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-type ProtectedRouteProps = {
-  children: React.ReactNode;
-};
-
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-
+  const searchParams = useSearchParams();
+  
   useEffect(() => {
     if (!loading && !user) {
-      // Store the path they were trying to access
-      sessionStorage.setItem('intendedPath', pathname);
+      // Store the full path they were trying to access (pathname + search params)
+      const fullPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+      sessionStorage.setItem('intendedPath', fullPath);
       router.push('/login');
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, searchParams]);
 
   if (loading) {
     return (

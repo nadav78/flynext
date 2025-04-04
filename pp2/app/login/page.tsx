@@ -1,8 +1,9 @@
+/* created with assistance from Claude 3.7 Sonnet */ 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Login() {
@@ -11,6 +12,31 @@ export default function Login() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Save the previous path when component mounts
+  useEffect(() => {
+    // First check if there's a redirect in the URL query params (highest priority)
+    const redirectPath = searchParams.get('redirect');
+    if (redirectPath) {
+      sessionStorage.setItem('intendedPath', redirectPath);
+      return;
+    }
+    
+    // If no query param, try using document.referrer as fallback
+    const referrer = document.referrer;
+    if (referrer && referrer.includes(window.location.origin) && 
+       !referrer.includes('/login') && !referrer.includes('/register')) {
+      // Parse the full URL to get both pathname and search params
+      const referrerUrl = new URL(referrer);
+      const fullPath = referrerUrl.pathname + referrerUrl.search;
+      
+      // Don't override if there's already a path stored (from ProtectedRoute)
+      if (!sessionStorage.getItem('intendedPath')) {
+        sessionStorage.setItem('intendedPath', fullPath);
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +44,10 @@ export default function Login() {
     
     try {
       await login(email, password);
-      router.push('/');
+      // Retrieve intended path from sessionStorage
+      const intendedPath = sessionStorage.getItem('intendedPath') || '/';
+      sessionStorage.removeItem('intendedPath'); // Clear after use
+      router.push(intendedPath);
     } catch (err: any) {
       setError(err.message || 'Failed to login');
     }
