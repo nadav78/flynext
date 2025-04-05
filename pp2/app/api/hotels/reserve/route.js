@@ -96,7 +96,8 @@ export async function POST(req) {
                     id: validData.hotel_id
                 },
                 select: {
-                    ownerId: true
+                    ownerId: true,
+                    name: true
                 }
             });
 
@@ -143,6 +144,23 @@ export async function POST(req) {
                 }
             })
 
+            await tx.notification.create({
+                data: {
+                    user: {
+                        connect: {
+                            id: userId  // This creates notification for the USER making the booking
+                        }
+                    },
+                    reservation: {
+                        connect: {
+                            id: reservation.id
+                        }
+                    },
+                    message: `Your reservation at ${hotel.name} has been confirmed`,
+                    type: NotificationType.OWNER_NEW_BOOKING
+                }
+            });
+            
             return reservation
         });
 
