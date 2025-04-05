@@ -64,6 +64,7 @@ type Hotel = {
     price_per_night: string;
     room_count: number;
   }[];
+  imageUrl?: string;
 };
 
 type SelectedHotelRoom = {
@@ -408,32 +409,34 @@ export default function FlightResultsPage() {
   // Booking handler
   const handleBookItinerary = () => {
     if (!user) {
-      sessionStorage.setItem("intendedPath", router.asPath);
+      sessionStorage.setItem("intendedPath", window.location.pathname + window.location.search);
       router.push("/login");
       return;
     }
   
-    // Set hotel and room query parameters (blank if not selected)
-    const hotelParam = selectedHotelRoom ? selectedHotelRoom.hotel.id : "";
-    const roomParam = selectedHotelRoom ? selectedHotelRoom.room.id : "";
-  
-    if (type === "one-way") {
-      if (!selectedOutbound) {
-        alert("Please select an outbound flight.");
-        return;
-      }
-      router.push(
-        `/bookings?outbound=${selectedOutbound.flights[0].id}?hotel=${hotelParam}&room=${roomParam}&checkin=${departure}`
-      );
-    } else {
-      if (!selectedOutbound || !selectedReturn) {
-        alert("Please select both an outbound and a return flight.");
-        return;
-      }
-      router.push(
-        `/bookings?outbound=${selectedOutbound.flights[0].id}&return=${selectedReturn.flights[0].id}&hotel=${hotelParam}&room=${roomParam}&checkin=${departure}`
-      );
+    // Format outbound flight for localStorage
+    if (selectedOutbound) {
+      const flightData = {
+        id: selectedOutbound.flights[0].id,
+        airline: selectedOutbound.flights[0].airline.name,
+        flightNumber: selectedOutbound.flights[0].flightNumber,
+        departureCity: selectedOutbound.flights[0].origin.city,
+        arrivalCity: selectedOutbound.flights[0].destination.city,
+        departureTime: selectedOutbound.flights[0].departureTime,
+        arrivalTime: selectedOutbound.flights[0].arrivalTime,
+        price: selectedOutbound.flights.reduce((sum, f) => sum + f.price, 0)
+      };
+      
+      // Save to localStorage
+      localStorage.setItem('selectedFlight', JSON.stringify(flightData));
+      
+      // Redirect to checkout
+      router.push('/checkout');
+      return;
     }
+    
+    // If no flight is selected
+    alert("Please select an outbound flight.");
   };
 
   return (

@@ -30,6 +30,7 @@ interface HotelBooking {
   name: string;
   roomType: string;
   roomTypeId: string;
+  hotelId: string;
   checkIn: string;
   checkOut: string;
   price: number;
@@ -199,8 +200,8 @@ export default function CheckoutPage() {
       // Book hotel if selected
       if (hotel) {
         const hotelBookingData = {
-          hotel_id: parseInt(hotel.id),
-          room_type_id: parseInt(hotel.id), // Assuming hotel.id also contains room type ID - adjust as needed
+          hotel_id: parseInt(hotel.hotelId),
+          room_type_id: parseInt(hotel.roomTypeId), 
           check_in_time: hotel.checkIn,
           check_out_time: hotel.checkOut
         };

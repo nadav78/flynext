@@ -77,7 +77,10 @@ export async function POST(req) {
                     check_out_time: {
                         gte: validData.check_in_time
                     },
-                    is_cancelled: false
+                    is_cancelled: false,
+                    userId: {
+                        not: userId // Exclude the current user's reservations
+                    }
                 }
             });
 
@@ -86,6 +89,10 @@ export async function POST(req) {
                     id: validData.room_type_id
                 }
             });
+
+            if (!roomType) {
+                throw new Error("Room type not found");
+            }
 
             if (overlappingReservations.length >= roomType.room_count) {
                 throw new Error("Room is not available for the selected dates");
@@ -157,7 +164,7 @@ export async function POST(req) {
                         }
                     },
                     message: `Your reservation at ${hotel.name} has been confirmed`,
-                    type: NotificationType.OWNER_NEW_BOOKING
+                    type: NotificationType.USER_BOOKING_CREATED
                 }
             });
             

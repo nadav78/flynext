@@ -250,9 +250,14 @@ export default function Hotels() {
                         })
                     });
                     
-                    if (retryResponse.ok) {
-                        handleReservationSuccess();
+                    if (response.ok || retryResponse?.ok) {
+                        const reservationData = response.ok 
+                            ? await response.json() 
+                            : await retryResponse.json();
+                        
+                        handleReservationSuccess(reservationData);
                         return;
+
                     } else {
                         const errorData = await retryResponse.json();
                         throw new Error(errorData.error || 'Failed to create reservation');
@@ -270,8 +275,11 @@ export default function Hotels() {
                 throw new Error(errorData.error || 'Failed to create reservation');
             }
             
+            // Get the response data
+            const reservationData = await response.json();
+            
             // Handle successful reservation
-            handleReservationSuccess();
+            handleReservationSuccess(reservationData);
             
         } catch (error: any) {
             setReservationError(error.message || 'Failed to make reservation');
@@ -283,10 +291,42 @@ export default function Hotels() {
     };
     
     // Function to handle successful reservation
-    const handleReservationSuccess = () => {
+    const handleReservationSuccess = (reservation: any) => {
         setReservationSuccess(true);
         setReservingHotelId(null);
         
+        if (reservation) {
+            // Find the selected hotel and room type
+            const selectedHotel = hotels.find(h => h.id === reservation.hotelId);
+            const selectedRoomType = selectedHotel?.HotelRoomType.find(r => r.id === reservation.hotelRoomTypeId);
+            
+            if (selectedHotel && selectedRoomType) {
+                // Calculate the number of nights
+                const checkInDate = new Date(checkin);
+                const checkOutDate = new Date(checkout);
+                const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 3600 * 24));
+                const totalPrice = selectedRoomType.price_per_night * nights;
+                
+                const hotelBooking = {
+                    id: reservation.id.toString(),
+                    hotelId: selectedHotel.id.toString(),   // Add hotel ID
+                    name: selectedHotel.name,
+                    roomType: selectedRoomType.name,
+                    roomTypeId: selectedRoomType.id.toString(),
+                    checkIn: checkInDate.toISOString(),
+                    checkOut: checkOutDate.toISOString(),
+                    price: totalPrice
+                };
+                
+                localStorage.setItem('selectedHotel', JSON.stringify(hotelBooking));
+                
+                // Ask user if they want to proceed to checkout
+                const proceedToCheckout = confirm("Reservation successful! Would you like to proceed to checkout?");
+                if (proceedToCheckout) {
+                    router.push('/checkout');
+                }
+            }
+        }
         // Show success message and clear it after a few seconds
         setTimeout(() => {
             setReservationSuccess(false);
