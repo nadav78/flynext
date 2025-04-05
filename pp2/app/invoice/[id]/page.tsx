@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import Navbar from '@/components/navbar';
+import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { PaperClipIcon, ArrowDownTrayIcon, CalendarIcon, BuildingOfficeIcon, UserIcon } from '@heroicons/react/24/outline';
 

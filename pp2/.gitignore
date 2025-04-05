@@ -23,7 +23,14 @@
 # misc
 .DS_Store
 *.pem
+
+# Text files
 *.txt
+
+# Public assets
+pp2/public/images/*
+pp2/public/invoices/*
+
 # debug
 
 npm-debug.log*

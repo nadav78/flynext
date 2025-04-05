@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Navbar from '@/components/navbar';
+import Navbar from '@/components/Navbar';
 
 export default function Profile() {
   const { user, loading } = useAuth();

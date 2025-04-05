@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Navbar from "../../components/navbar";
+import Navbar from "../../components/Navbar";
 
 export default function BookingPage() {
   const searchParams = useSearchParams();
