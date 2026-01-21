@@ -4,7 +4,6 @@ A full‑stack travel app for searching flights and hotels, reserving rooms, boo
 
 ## Group Project
 - This repository contains team work completed for CSC309. Multiple contributors worked across backend, frontend, and infrastructure.
-- See `group_responsibilities.txt` for detailed roles and tasks.
 
 ## Personal Contributions
 - Checkout flow: `pp2/app/checkout/page.tsx` (card validation, flow control)
@@ -77,4 +76,4 @@ Notes:
 - HTTPS endpoint recommended.
 
 ## Notes
-- This repo includes team contributions. My individual work is listed above and in `group_responsibilities.txt`.
+- This repo includes team contributions. My individual work is listed above.
