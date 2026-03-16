@@ -167,6 +167,11 @@ const HOTELS = [
 ];
 
 async function main() {
+  console.log('Seeding locations and airports...');
+  const { populateLocations, populateAirports } = await import('../utils/get-afs.js');
+  await populateLocations();
+  await populateAirports();
+
   console.log('Seeding hotels...');
 
   // Create or find the system hotel owner account

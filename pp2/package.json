@@ -2,15 +2,16 @@
   "name": "pp1",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node --input-type=module < prisma/seed.js"
+    "seed": "node prisma/seed.js"
   },
   "prisma": {
-    "seed": "node --input-type=module < prisma/seed.js"
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
