@@ -17,7 +17,7 @@ export async function GET(req) {
         return NextResponse.json(hotels);
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to fetch hotels",
             details: error.message

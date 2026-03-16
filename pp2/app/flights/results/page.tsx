@@ -258,7 +258,6 @@ export default function FlightResultsPage() {
   // Fetch hotel suggestions using the provided API endpoint
   useEffect(() => {
     async function fetchHotels() {
-      console.log(user);
       if (!user) return;
       // Use the last leg of the first flight result for the full city name
       let cityForHotels = destination;
@@ -274,7 +273,6 @@ export default function FlightResultsPage() {
           params.append("checkout", arrival);
         }
         const queryString = `?${params.toString()}`;
-        console.log("Fetching hotels with query:", queryString);
         const response = await fetch("/api/public/hotels" + queryString, {
           method: "GET",
           headers: { 
@@ -287,7 +285,6 @@ export default function FlightResultsPage() {
           return;
         }
         const data = await response.json();
-        console.log("Fetched hotels:", data);
         setHotels(data.hotels.slice(0, 3));
       } catch (err) {
         console.error("Error fetching hotels:", err);

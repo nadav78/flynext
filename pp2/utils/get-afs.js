@@ -6,7 +6,6 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const API_KEY_FILE = path.join(process.cwd(), "api-keys.txt");
-console.log("API_KEY_FILE", API_KEY_FILE);
 const BASE_URL = "https://advanced-flights-system.replit.app";
 
 /*
@@ -62,7 +61,6 @@ export async function cancelFlight(bookingReference, lastName) {
       body: JSON.stringify(body),
     });
     const data = await response.json();
-    console.log(data);
     if(response.status !== 200) {
       console.error("Error cancelling flight through AFS:", response.status);
     }

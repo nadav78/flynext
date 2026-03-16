@@ -46,7 +46,6 @@ export async function GET(req) {
 
     const filters = validationResult.data;
     const { checkin, checkout, price_min, price_max, city, country, ...hotelFilters } = filters;
-    console.log(city)
     try {
         // Basic where clause for hotel filters
         const where = { ...hotelFilters };

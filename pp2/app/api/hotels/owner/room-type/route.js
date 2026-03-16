@@ -64,7 +64,7 @@ export async function POST(req) {
                 error: "Hotel not found"
             }, { status: 404 });
         }
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to create room type",
             details: error.message
@@ -113,7 +113,7 @@ export async function GET(req) {
 
         return NextResponse.json(roomTypes, { status: 200 });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to fetch room types",
             details: error.message
@@ -243,7 +243,7 @@ export async function PATCH(req) {
 
         return NextResponse.json(updatedRoomType, { status: 200 });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to update room type",
             details: error.message

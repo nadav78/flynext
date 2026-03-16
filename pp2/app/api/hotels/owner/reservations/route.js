@@ -88,7 +88,7 @@ export async function GET(req) {
 
         return NextResponse.json(reservations, { status: 200 });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to fetch hotel",
             details: error.message
@@ -187,7 +187,7 @@ export async function PATCH(req) {
         
         return NextResponse.json(updatedReservation, { status: 200 });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to update reservation",
             details: error.message

@@ -25,7 +25,7 @@ export async function GET(req) {
         return NextResponse.json(reservations);
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to fetch reservations",
             details: error.message
@@ -190,7 +190,7 @@ export async function POST(req) {
                 details: "The selected dates overlap with existing reservations"
             }, { status: 400 });
         }
-        console.log(error);
+        console.error(error);
         return NextResponse.json({
             error: "Failed to create reservation",
             details: error.message
