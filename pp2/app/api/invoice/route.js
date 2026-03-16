@@ -68,25 +68,30 @@ export async function POST(req) {
 
     // Add content to PDF
     addText('Trip Invoice', { size: 20, align: 'center' });
-    addText(`Booking Reference: ${tripItinerary.afs_booking_reference || 'N/A'}`);
-    addText(`Total Price: ${tripItinerary.total_price || 'N/A'}`);
-    addText(`Date of invoice: ${tripItinerary.created_at.toDateString()}`);
+    if (tripItinerary.afs_booking_reference) {
+      addText(`Booking Reference: ${tripItinerary.afs_booking_reference}`);
+    }
+    addText(`Total Price: $${tripItinerary.total_price || '0'}`);
+    addText(`Date: ${tripItinerary.created_at.toDateString()}`);
+    y -= lineHeight;
     addText('Contact Information', { size: 16 });
     addText(`Full Name: ${tripItinerary.user.first_name || ''} ${tripItinerary.user.last_name || ''}`);
     addText(`Email: ${tripItinerary.user.email || ''}`);
-    addText(`Phone: ${tripItinerary.user.phone_number || ''}`);
+    if (tripItinerary.user.phone_number) {
+      addText(`Phone: ${tripItinerary.user.phone_number}`);
+    }
 
-    if (tripItinerary.HotelReservation.length > 0) {
+    const activeReservations = tripItinerary.HotelReservation.filter(r => !r.is_cancelled);
+    if (activeReservations.length > 0) {
+      y -= lineHeight;
       addText('Hotel Reservations', { size: 16 });
-      tripItinerary.HotelReservation.forEach((reservation, index) => {
+      activeReservations.forEach((reservation, index) => {
         addText(`Reservation ${index + 1}`, { size: 14 });
-        addText(`Hotel Name: ${reservation.hotel.name}`);
-        addText(`Room Type: ${reservation.roomType.name}`);
-        addText(`Check-in: ${new Date(reservation.check_in_time).toLocaleString()}`);
-        addText(`Check-out: ${new Date(reservation.check_out_time).toLocaleString()}`);
+        addText(`Hotel: ${reservation.hotel.name}`);
+        addText(`Room: ${reservation.roomType.name}`);
+        addText(`Check-in: ${new Date(reservation.check_in_time).toLocaleDateString()}`);
+        addText(`Check-out: ${new Date(reservation.check_out_time).toLocaleDateString()}`);
       });
-    } else {
-      addText('No hotel reservations found for this trip.');
     }
 
     // Serialize the PDF to bytes (Uint8Array)
