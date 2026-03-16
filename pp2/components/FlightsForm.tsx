@@ -66,8 +66,8 @@ type FormData = {
   origin: Airport | null;
   destination: Airport | null;
   departure: string;
-  arrival: string;
-  type: string;
+  return: string;
+  type: "one-way" | "round-trip";
 };
 
 const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
@@ -76,8 +76,8 @@ const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
     origin: null,
     destination: null,
     departure: "",
-    arrival: "",
-    type: "",
+    return: "",
+    type: "one-way",
   });
   const [error, setError] = useState<string>("");
 
@@ -88,15 +88,13 @@ const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
     setFormData((prev) => ({ ...prev, [field]: airport }));
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "type" && value === "one-way") {
-      setFormData((prev) => ({ ...prev, type: value, arrival: "" }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const setTripType = (type: "one-way" | "round-trip") => {
+    setFormData((prev) => ({ ...prev, type, return: type === "one-way" ? "" : prev.return }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -106,7 +104,7 @@ const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
       return;
     }
     setError("");
-    const queryString = `?origin=${formData.origin.code}&destination=${formData.destination.code}&departure=${formData.departure}&arrival=${formData.arrival}&type=${formData.type}`;
+    const queryString = `?origin=${formData.origin.code}&destination=${formData.destination.code}&departure=${formData.departure}&arrival=${formData.return}&type=${formData.type}`;
     router.push("/flights/results" + queryString);
   };
 
@@ -119,10 +117,35 @@ const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
         Search Flights
       </h2>
       {error && (
-        <p className="mb-4 text-red-500 text-center">
-          {error}
-        </p>
+        <p className="mb-4 text-red-500 text-center">{error}</p>
       )}
+
+      {/* Trip type toggle */}
+      <div className="mb-6 flex rounded-lg overflow-hidden border border-base-300">
+        <button
+          type="button"
+          onClick={() => setTripType("one-way")}
+          className={`flex-1 py-2 text-sm font-medium transition-colors ${
+            formData.type === "one-way"
+              ? "bg-primary text-primary-content"
+              : "bg-base-100 text-base-content hover:bg-base-200"
+          }`}
+        >
+          One-way
+        </button>
+        <button
+          type="button"
+          onClick={() => setTripType("round-trip")}
+          className={`flex-1 py-2 text-sm font-medium transition-colors ${
+            formData.type === "round-trip"
+              ? "bg-primary text-primary-content"
+              : "bg-base-100 text-base-content hover:bg-base-200"
+          }`}
+        >
+          Round-trip
+        </button>
+      </div>
+
       <AirportAutocomplete
         label="Origin"
         selected={formData.origin}
@@ -135,7 +158,8 @@ const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
         setSelected={(airport) => handleAirportChange("destination", airport)}
         airports={airports}
       />
-      <div className="mb-4 grid grid-cols-2 gap-4">
+
+      <div className={`mb-4 grid gap-4 ${formData.type === "round-trip" ? "grid-cols-2" : "grid-cols-1"}`}>
         <div>
           <label className="block mb-2 text-base-content" htmlFor="departure">
             Departure
@@ -149,37 +173,24 @@ const FlightsForm: React.FC<FlightsFormProps> = ({ airports }) => {
             className="w-full border border-base-300 bg-base-100 text-base-content rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
           />
         </div>
-        <div>
-          <label className="block mb-2 text-base-content" htmlFor="arrival">
-            Arrival
-          </label>
-          <input
-            type="date"
-            id="arrival"
-            name="arrival"
-            value={formData.arrival}
-            onChange={handleChange}
-            disabled={formData.type === "one-way"}
-            className={`w-full border border-base-300 bg-base-100 text-base-content rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300 ${formData.type === "one-way" ? "opacity-50 cursor-not-allowed" : ""}`}
-          />
-        </div>
+        {formData.type === "round-trip" && (
+          <div>
+            <label className="block mb-2 text-base-content" htmlFor="return">
+              Return
+            </label>
+            <input
+              type="date"
+              id="return"
+              name="return"
+              value={formData.return}
+              onChange={handleChange}
+              min={formData.departure}
+              className="w-full border border-base-300 bg-base-100 text-base-content rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
+            />
+          </div>
+        )}
       </div>
-      <div className="mb-6">
-        <label className="block mb-2 text-base-content" htmlFor="type">
-          Type
-        </label>
-        <select
-          id="type"
-          name="type"
-          value={formData.type}
-          onChange={handleChange}
-          className="w-full border border-base-300 bg-base-100 text-base-content rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
-        >
-          <option value="">Select type</option>
-          <option value="one-way">One-way</option>
-          <option value="round-trip">Round-trip</option>
-        </select>
-      </div>
+
       <button type="submit" className="w-full btn btn-primary">
         Search
       </button>
