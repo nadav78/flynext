@@ -45,15 +45,13 @@ export async function GET(req) {
     }
 
     const filters = validationResult.data;
-    const { checkin, checkout, price_min, price_max, city, country, ...hotelFilters } = filters;
+    const { checkin, checkout, price_min, price_max, city, country, star_rating, ...hotelFilters } = filters;
     try {
-        // Basic where clause for hotel filters
-        const where = { ...hotelFilters };
-        
         // Find hotels matching the basic criteria
         const hotels = await prisma.hotel.findMany({
             where: {
-                ...where,
+                ...hotelFilters,
+                ...(star_rating ? { star_rating: { gte: star_rating } } : {}),
                 Location: {
                     // Updated to use case-insensitive search for city and country
                     ...(city ? { city: { equals: city, mode: 'insensitive' } } : {}),
