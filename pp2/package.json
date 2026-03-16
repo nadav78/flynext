@@ -6,10 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "node --input-type=module < prisma/seed.js"
+  },
+  "prisma": {
+    "seed": "node --input-type=module < prisma/seed.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.5.0",
     "bcryptjs": "^3.0.2",
     "daisyui": "^5.0.12",
