@@ -59,6 +59,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [flight, setFlight] = useState<FlightBooking | null>(null);
+  const [returnFlight, setReturnFlight] = useState<FlightBooking | null>(null);
   const [hotel, setHotel] = useState<HotelBooking | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [passportNumber, setPassportNumber] = useState('');
@@ -94,21 +95,27 @@ export default function CheckoutPage() {
   useEffect(() => {
     // Get flight and hotel data from localStorage or API
     const flightData = localStorage.getItem('selectedFlight');
+    const returnFlightData = localStorage.getItem('selectedReturnFlight');
     const hotelData = localStorage.getItem('selectedHotel');
-    
+
     if (flightData) {
       const parsedFlight = JSON.parse(flightData);
       setFlight(parsedFlight);
       setTotalPrice(prev => prev + parsedFlight.price);
     }
-    
+
+    if (returnFlightData) {
+      const parsedReturn = JSON.parse(returnFlightData);
+      setReturnFlight(parsedReturn);
+      setTotalPrice(prev => prev + parsedReturn.price);
+    }
+
     if (hotelData) {
       const parsedHotel = JSON.parse(hotelData);
       setHotel(parsedHotel);
       setTotalPrice(prev => prev + parsedHotel.price);
     }
-    
-    // If no items to check out, redirect to home
+
     if (!flightData && !hotelData) {
       router.push('/');
     }
@@ -172,7 +179,7 @@ export default function CheckoutPage() {
           tripItineraryId: null,
           passportNumber: passportNumber,
           firstFlightId: flight.id,
-          returnFlightId: ''
+          returnFlightId: returnFlight?.id ?? ''
         };
 
         const flightResponse = await fetch('/api/flights/book', {
@@ -229,6 +236,7 @@ export default function CheckoutPage() {
       }
 
       localStorage.removeItem('selectedFlight');
+      localStorage.removeItem('selectedReturnFlight');
       localStorage.removeItem('selectedHotel');
       setSuccess(true);
 
@@ -291,7 +299,7 @@ export default function CheckoutPage() {
               
               {flight && (
                 <div className="mb-4 p-4 border border-base-300 rounded-lg">
-                  <h3 className="font-bold text-lg">Flight</h3>
+                  <h3 className="font-bold text-lg">{returnFlight ? 'Outbound Flight' : 'Flight'}</h3>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     <div className="text-sm opacity-70">Airline:</div>
                     <div>{flight.airline}</div>
@@ -311,6 +319,24 @@ export default function CheckoutPage() {
                 </div>
               )}
               
+              {returnFlight && (
+                <div className="mb-4 p-4 border border-base-300 rounded-lg">
+                  <h3 className="font-bold text-lg">Return Flight</h3>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="text-sm opacity-70">Airline:</div>
+                    <div>{returnFlight.airline}</div>
+                    <div className="text-sm opacity-70">Flight:</div>
+                    <div>{returnFlight.flightNumber}</div>
+                    <div className="text-sm opacity-70">Route:</div>
+                    <div>{returnFlight.departureCity} to {returnFlight.arrivalCity}</div>
+                    <div className="text-sm opacity-70">Departure:</div>
+                    <div>{new Date(returnFlight.departureTime).toLocaleString()}</div>
+                    <div className="text-sm opacity-70">Price:</div>
+                    <div className="font-semibold">${returnFlight.price.toFixed(2)}</div>
+                  </div>
+                </div>
+              )}
+
               {hotel && (
                 <div className="mb-4 p-4 border border-base-300 rounded-lg">
                   <h3 className="font-bold text-lg">Hotel</h3>

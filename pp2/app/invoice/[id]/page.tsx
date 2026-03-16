@@ -47,6 +47,8 @@ export default function InvoicePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [cancellingFlight, setCancellingFlight] = useState(false);
+  const [cancellingHotel, setCancellingHotel] = useState<number | null>(null);
   
   const fetchInvoice = async () => {
     try {
@@ -110,6 +112,60 @@ export default function InvoicePage() {
     }
   };
   
+  const cancelFlight = async () => {
+    if (!invoice || !invoice.bookingReference || invoice.bookingReference === 'N/A') return;
+    if (!confirm('Are you sure you want to cancel your flight booking? This cannot be undone.')) return;
+    setCancellingFlight(true);
+    try {
+      const response = await fetch('/api/flights/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        body: JSON.stringify({
+          bookingReference: invoice.bookingReference,
+          lastName: invoice.user.lastName,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to cancel flight');
+      }
+      setSuccess('Flight cancelled successfully.');
+      fetchInvoice();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setCancellingFlight(false);
+    }
+  };
+
+  const cancelHotelReservation = async (reservationId: string) => {
+    if (!confirm('Are you sure you want to cancel this hotel reservation? This cannot be undone.')) return;
+    setCancellingHotel(parseInt(reservationId));
+    try {
+      const response = await fetch('/api/hotels/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        body: JSON.stringify({ reservation_id: parseInt(reservationId) }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to cancel reservation');
+      }
+      setSuccess('Hotel reservation cancelled successfully.');
+      fetchInvoice();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setCancellingHotel(null);
+    }
+  };
+
   useEffect(() => {
     if (params.id) {
       fetchInvoice();
@@ -234,12 +290,23 @@ export default function InvoicePage() {
                   <p className="text-sm text-base-content/70">Booking Reference</p>
                   <p className="font-semibold text-lg">{invoice.bookingReference}</p>
                 </div>
-                {invoice.ticketNumber && (
-                  <div className="text-right">
-                    <p className="text-sm text-base-content/70">Ticket Number</p>
-                    <p className="font-semibold">{invoice.ticketNumber}</p>
-                  </div>
-                )}
+                <div className="flex flex-col items-end gap-2">
+                  {invoice.ticketNumber && invoice.ticketNumber !== 'N/A' && (
+                    <div className="text-right">
+                      <p className="text-sm text-base-content/70">Ticket Number</p>
+                      <p className="font-semibold">{invoice.ticketNumber}</p>
+                    </div>
+                  )}
+                  {invoice.bookingReference && invoice.bookingReference !== 'N/A' && (
+                    <button
+                      onClick={cancelFlight}
+                      disabled={cancellingFlight}
+                      className="btn btn-error btn-sm"
+                    >
+                      {cancellingFlight ? 'Cancelling...' : 'Cancel Flight'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             
@@ -328,9 +395,18 @@ export default function InvoicePage() {
                       </div>
                     </div>
                     
-                    <div className="text-right">
-                      <p className="text-sm text-base-content/70">Price</p>
-                      <p className="font-semibold">${reservation.price}</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-base-content/70">Price</p>
+                        <p className="font-semibold">${reservation.price}</p>
+                      </div>
+                      <button
+                        onClick={() => cancelHotelReservation(reservation.id)}
+                        disabled={cancellingHotel === parseInt(reservation.id)}
+                        className="btn btn-error btn-sm"
+                      >
+                        {cancellingHotel === parseInt(reservation.id) ? 'Cancelling...' : 'Cancel'}
+                      </button>
                     </div>
                   </div>
                 ))}

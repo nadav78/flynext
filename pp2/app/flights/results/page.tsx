@@ -410,30 +410,58 @@ export default function FlightResultsPage() {
       router.push("/login");
       return;
     }
-  
-    // Format outbound flight for localStorage
-    if (selectedOutbound) {
-      const flightData = {
-        id: selectedOutbound.flights[0].id,
-        airline: selectedOutbound.flights[0].airline.name,
-        flightNumber: selectedOutbound.flights[0].flightNumber,
-        departureCity: selectedOutbound.flights[0].origin.city,
-        arrivalCity: selectedOutbound.flights[0].destination.city,
-        departureTime: selectedOutbound.flights[0].departureTime,
-        arrivalTime: selectedOutbound.flights[0].arrivalTime,
-        price: selectedOutbound.flights.reduce((sum, f) => sum + f.price, 0)
-      };
-      
-      // Save to localStorage
-      localStorage.setItem('selectedFlight', JSON.stringify(flightData));
-      
-      // Redirect to checkout
-      router.push('/checkout');
+
+    if (!selectedOutbound) {
+      alert("Please select an outbound flight.");
       return;
     }
-    
-    // If no flight is selected
-    alert("Please select an outbound flight.");
+
+    // Save outbound flight
+    const flightData = {
+      id: selectedOutbound.flights[0].id,
+      airline: selectedOutbound.flights[0].airline.name,
+      flightNumber: selectedOutbound.flights[0].flightNumber,
+      departureCity: selectedOutbound.flights[0].origin.city,
+      arrivalCity: selectedOutbound.flights[0].destination.city,
+      departureTime: selectedOutbound.flights[0].departureTime,
+      arrivalTime: selectedOutbound.flights[0].arrivalTime,
+      price: selectedOutbound.flights.reduce((sum, f) => sum + f.price, 0),
+    };
+    localStorage.setItem('selectedFlight', JSON.stringify(flightData));
+
+    // Save return flight if selected
+    if (selectedReturn) {
+      const returnFlightData = {
+        id: selectedReturn.flights[0].id,
+        airline: selectedReturn.flights[0].airline.name,
+        flightNumber: selectedReturn.flights[0].flightNumber,
+        departureCity: selectedReturn.flights[0].origin.city,
+        arrivalCity: selectedReturn.flights[0].destination.city,
+        departureTime: selectedReturn.flights[0].departureTime,
+        arrivalTime: selectedReturn.flights[0].arrivalTime,
+        price: selectedReturn.flights.reduce((sum, f) => sum + f.price, 0),
+      };
+      localStorage.setItem('selectedReturnFlight', JSON.stringify(returnFlightData));
+    } else {
+      localStorage.removeItem('selectedReturnFlight');
+    }
+
+    // Save hotel room if selected from this page
+    if (selectedHotelRoom) {
+      const hotelData = {
+        id: String(selectedHotelRoom.hotel.id),
+        name: selectedHotelRoom.hotel.name,
+        roomType: selectedHotelRoom.room.name,
+        roomTypeId: String(selectedHotelRoom.room.id),
+        hotelId: String(selectedHotelRoom.hotel.id),
+        checkIn: departure,
+        checkOut: arrival || '',
+        price: parseFloat(selectedHotelRoom.room.price_per_night),
+      };
+      localStorage.setItem('selectedHotel', JSON.stringify(hotelData));
+    }
+
+    router.push('/checkout');
   };
 
   return (
