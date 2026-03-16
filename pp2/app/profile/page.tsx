@@ -1,13 +1,13 @@
 'use client';
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 
-export default function Profile() {
+function ProfileInner() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'details' | 'password'>('details');
@@ -451,5 +451,12 @@ export default function Profile() {
         </div>
       </div>
     </ProtectedRoute>
+  );
+}
+export default function Profile() {
+  return (
+    <Suspense>
+      <ProfileInner />
+    </Suspense>
   );
 }

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 
-export default function Register() {
+function RegisterInner() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -193,5 +193,13 @@ export default function Register() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function Register() {
+  return (
+    <Suspense>
+      <RegisterInner />
+    </Suspense>
   );
 }

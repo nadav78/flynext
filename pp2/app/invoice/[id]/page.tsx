@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -45,7 +45,7 @@ type Invoice = {
   }>;
 };
 
-export default function InvoicePage() {
+function InvoicePageInner() {
   const params = useParams();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
@@ -438,5 +438,13 @@ export default function InvoicePage() {
         </div>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function InvoicePage() {
+  return (
+    <Suspense>
+      <InvoicePageInner />
+    </Suspense>
   );
 }

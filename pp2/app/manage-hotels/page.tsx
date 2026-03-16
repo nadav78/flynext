@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
@@ -58,7 +58,7 @@ type Reservation = {
   createdAt?: string;
 };
 
-export default function ManageHotels() {
+function ManageHotelsInner() {
   const { user } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("hotels");
@@ -1151,5 +1151,13 @@ export default function ManageHotels() {
         }
       `}</style>
     </main>
+  );
+}
+
+export default function ManageHotels() {
+  return (
+    <Suspense>
+      <ManageHotelsInner />
+    </Suspense>
   );
 }

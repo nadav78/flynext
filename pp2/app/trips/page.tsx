@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -21,7 +21,7 @@ type Trip = {
   }>;
 };
 
-export default function TripsPage() {
+function TripsPageInner() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,5 +91,13 @@ export default function TripsPage() {
         </div>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function TripsPage() {
+  return (
+    <Suspense>
+      <TripsPageInner />
+    </Suspense>
   );
 }
