@@ -115,16 +115,23 @@ export async function POST(req) {
 
                 // Determine which TripItinerary to link this reservation to
             let tripItineraryId = validData.trip_id || null;
+            const nights = Math.ceil(
+                (validData.check_out_time - validData.check_in_time) / (1000 * 60 * 60 * 24)
+            );
+            const hotelPrice = parseFloat(roomType.price_per_night || 0) * nights;
+
             if (!tripItineraryId) {
                 // Hotel-only booking: create a new TripItinerary
-                const nights = Math.ceil(
-                    (validData.check_out_time - validData.check_in_time) / (1000 * 60 * 60 * 24)
-                );
-                const totalPrice = parseFloat(roomType.price_per_night || 0) * nights;
                 const newTrip = await tx.tripItinerary.create({
-                    data: { userId, total_price: totalPrice }
+                    data: { userId, total_price: hotelPrice }
                 });
                 tripItineraryId = newTrip.id;
+            } else {
+                // Combined booking: add hotel cost to the existing trip's total
+                await tx.tripItinerary.update({
+                    where: { id: tripItineraryId },
+                    data: { total_price: { increment: hotelPrice } }
+                });
             }
 
             const reservation = await tx.hotelReservation.create({

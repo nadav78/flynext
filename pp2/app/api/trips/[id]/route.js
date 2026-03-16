@@ -1,6 +1,7 @@
-/* Created with assistance from Claude 3.7 Sonnet */ 
+/* Created with assistance from Claude 3.7 Sonnet */
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { verifyFlight } from '@/utils/get-afs.js';
 
 const prisma = new PrismaClient();
 
@@ -48,6 +49,27 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: "Trip not found" }, { status: 404 });
     }
 
+    // Fetch flight details from AFS if this trip has a flight booking
+    let flightDetails = [];
+    if (trip.afs_booking_reference && trip.user.last_name) {
+      const afsResult = await verifyFlight({
+        lastName: trip.user.last_name,
+        bookingReference: trip.afs_booking_reference,
+      });
+      if (afsResult && !afsResult.error && Array.isArray(afsResult.flights)) {
+        flightDetails = afsResult.flights.map(f => ({
+          id: f.id ?? f.flightNumber ?? '',
+          flightNumber: f.flightNumber ?? '',
+          airline: f.airline?.name ?? f.airline ?? '',
+          origin: f.origin?.city ? `${f.origin.city} (${f.origin.code})` : (f.origin ?? ''),
+          destination: f.destination?.city ? `${f.destination.city} (${f.destination.code})` : (f.destination ?? ''),
+          departureTime: f.departureTime ?? '',
+          arrivalTime: f.arrivalTime ?? '',
+          price: f.price?.toString() ?? '0',
+        }));
+      }
+    }
+
     // Format the response
     const response = {
       id: trip.id.toString(),
@@ -74,8 +96,7 @@ export async function GET(req, { params }) {
                Math.ceil((reservation.check_out_time - reservation.check_in_time) / (1000 * 60 * 60 * 24))).toFixed(2) : 
                '0'
       })),
-      // Add flight details if you're storing them
-      flights: [] // populate this from your flight booking data
+      flights: flightDetails
     };
 
     return NextResponse.json(response);

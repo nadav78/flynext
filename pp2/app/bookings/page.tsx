@@ -14,10 +14,11 @@ export default function BookingPage() {
   const roomId = searchParams.get("room") || "";
   const checkin = searchParams.get("checkin") || "";
 
-  // State to hold fetched flight details
+  // State to hold fetched flight and room details
   const [outboundFlight, setOutboundFlight] = useState<any>(null);
   const [returnFlight, setReturnFlight] = useState<any>(null);
   const [loadingFlights, setLoadingFlights] = useState<boolean>(true);
+  const [roomPricePerNight, setRoomPricePerNight] = useState<number>(0);
 
   // Fetch outbound flight details from the new API endpoint
   useEffect(() => {
@@ -47,12 +48,27 @@ export default function BookingPage() {
     fetchFlights();
   }, [outboundId, returnId]);
 
+  useEffect(() => {
+    async function fetchRoomPrice() {
+      if (!hotelId || !roomId) return;
+      try {
+        const res = await fetch(`/api/hotels/${hotelId}/room-types`);
+        if (!res.ok) return;
+        const roomTypes = await res.json();
+        const room = roomTypes.find((r: any) => String(r.id) === String(roomId));
+        if (room) setRoomPricePerNight(parseFloat(room.price_per_night) || 0);
+      } catch {
+        // leave at 0 if fetch fails
+      }
+    }
+    fetchRoomPrice();
+  }, [hotelId, roomId]);
+
   // Compute totals based on fetched flight details.
   const flightsTotal =
     (outboundFlight ? outboundFlight.price : 0) +
     (returnFlight ? returnFlight.price : 0);
-  // Use a placeholder for hotel total if a hotel/room is selected.
-  const hotelTotal = hotelId && roomId ? 350 : 0;
+  const hotelTotal = hotelId && roomId ? roomPricePerNight : 0;
   const grandTotal = flightsTotal + hotelTotal;
 
   return (
@@ -183,7 +199,7 @@ export default function BookingPage() {
                 <span className="font-medium">Flights Total:</span> ${flightsTotal}
               </p>
               <p>
-                <span className="font-medium">Hotel Total:</span> ${hotelTotal}
+                <span className="font-medium">Hotel (per night):</span> ${hotelTotal}
               </p>
               <p className="font-bold text-xl">
                 <span className="font-medium">Grand Total:</span> ${grandTotal}
