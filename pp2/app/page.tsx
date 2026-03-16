@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/contexts/auth-context';
 
 const DESTINATIONS = ['New York', 'London', 'Tokyo', 'Dubai', 'Paris', 'Sydney'];
 
 export default function Home() {
+  const { user } = useAuth();
   const [destIndex, setDestIndex] = useState(0);
   const [visible, setVisible] = useState(true);
 
@@ -104,14 +106,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA banner */}
-      <section className="bg-base-100 py-16 px-4 text-center">
-        <h2 className="text-3xl font-bold mb-3">Ready to take off?</h2>
-        <p className="text-base-content/70 mb-6 max-w-md mx-auto">
-          Create a free account and start booking your next adventure in minutes.
-        </p>
-        <Link href="/register" className="btn btn-primary btn-lg">Get Started</Link>
-      </section>
+      {/* CTA banner — only shown to guests */}
+      {!user && (
+        <section className="bg-base-100 py-16 px-4 text-center">
+          <h2 className="text-3xl font-bold mb-3">Ready to take off?</h2>
+          <p className="text-base-content/70 mb-6 max-w-md mx-auto">
+            Create a free account and start booking your next adventure in minutes.
+          </p>
+          <Link href="/register" className="btn btn-primary btn-lg">Get Started</Link>
+        </section>
+      )}
     </main>
   );
 }
