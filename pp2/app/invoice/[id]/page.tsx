@@ -12,6 +12,7 @@ type Invoice = {
   id: string;
   tripId: string;
   bookingReference: string;
+  flightCancelled: boolean;
   ticketNumber: string;
   totalPrice: string;
   createdAt: string;
@@ -277,7 +278,9 @@ export default function InvoicePage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-base-content/70">Booking Reference</p>
-                    <p className="font-semibold text-lg">{invoice.bookingReference}</p>
+                    <p className={`font-semibold text-lg ${invoice.flightCancelled ? 'line-through text-base-content/40' : ''}`}>
+                      {invoice.bookingReference}
+                    </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     {invoice.ticketNumber && invoice.ticketNumber !== 'N/A' && (
@@ -286,13 +289,17 @@ export default function InvoicePage() {
                         <p className="font-semibold">{invoice.ticketNumber}</p>
                       </div>
                     )}
-                    <button
-                      onClick={cancelFlight}
-                      disabled={cancellingFlight}
-                      className="btn btn-error btn-sm"
-                    >
-                      {cancellingFlight ? 'Cancelling...' : 'Cancel Flight'}
-                    </button>
+                    {invoice.flightCancelled ? (
+                      <span className="badge badge-error">Flight Cancelled</span>
+                    ) : (
+                      <button
+                        onClick={cancelFlight}
+                        disabled={cancellingFlight}
+                        className="btn btn-error btn-sm"
+                      >
+                        {cancellingFlight ? 'Cancelling...' : 'Cancel Flight'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

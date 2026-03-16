@@ -71,10 +71,15 @@ export async function GET(req, { params }) {
     }
 
     // Format the response
+    const rawRef = trip.afs_booking_reference || null;
+    const flightCancelled = rawRef?.startsWith('CANCELLED_') ?? false;
+    const bookingReference = flightCancelled ? rawRef.replace('CANCELLED_', '') : (rawRef || 'N/A');
+
     const response = {
       id: trip.id.toString(),
       tripId: trip.id.toString(),
-      bookingReference: trip.afs_booking_reference || 'N/A',
+      bookingReference,
+      flightCancelled,
       ticketNumber: trip.afs_ticket_number || 'N/A',
       totalPrice: trip.total_price ? trip.total_price.toString() : '0',
       createdAt: trip.created_at.toISOString(),
