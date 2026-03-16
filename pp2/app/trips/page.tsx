@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { fetchWithAuth } from '@/utils/fetch-with-auth';
 
 type Trip = {
   id: number;
@@ -26,9 +27,7 @@ export default function TripsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/trips', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
-    })
+    fetchWithAuth('/api/trips')
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) setTrips(data);

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { PaperClipIcon, ArrowDownTrayIcon, CalendarIcon, BuildingOfficeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { fetchWithAuth } from '@/utils/fetch-with-auth';
 
 type Invoice = {
   id: string;
@@ -54,11 +55,7 @@ export default function InvoicePage() {
   const fetchInvoice = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/trips/${params.id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
+      const response = await fetchWithAuth(`/api/trips/${params.id}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch invoice data');
@@ -77,12 +74,7 @@ export default function InvoicePage() {
     setLoading(true);
     try {
       // Call the invoice generation API
-      const response = await fetch(`/api/invoice?tripId=${params.id}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
+      const response = await fetchWithAuth(`/api/invoice?tripId=${params.id}`, { method: 'POST' });
       
       if (!response.ok) {
         throw new Error('Failed to generate invoice');
@@ -118,12 +110,9 @@ export default function InvoicePage() {
     if (!confirm('Are you sure you want to cancel your flight booking? This cannot be undone.')) return;
     setCancellingFlight(true);
     try {
-      const response = await fetch('/api/flights/cancel', {
+      const response = await fetchWithAuth('/api/flights/cancel', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           bookingReference: invoice.bookingReference,
           lastName: invoice.user.lastName,
@@ -146,12 +135,9 @@ export default function InvoicePage() {
     if (!confirm('Are you sure you want to cancel this hotel reservation? This cannot be undone.')) return;
     setCancellingHotel(parseInt(reservationId));
     try {
-      const response = await fetch('/api/hotels/cancel', {
+      const response = await fetchWithAuth('/api/hotels/cancel', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reservation_id: parseInt(reservationId) }),
       });
       if (!response.ok) {
