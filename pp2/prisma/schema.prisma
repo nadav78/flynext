@@ -158,6 +158,3 @@ model Airport {
   locationId Int
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-}
