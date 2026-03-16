@@ -6,19 +6,10 @@ import { getUserIdFromToken } from "@/utils/auth.js";
 
 const prisma = new PrismaClient();
 
-export async function GET(req) {
-    if (req.method !== "POST") {
-        return NextResponse.json({ error: "Invalid method, must be GET" }, { status: 405 });
-    }
-
-    // Validate that the request is in JSON format
-    const formatError = validateRequestFormat(req, 'json');
-    if (formatError) {
-        return NextResponse.json(formatError, { status: 400 });
-    }
-
-    const lastName = params.get("lastName") || "";
-    const bookingReference = params.get("bookingReference") || "";
+export async function POST(req) {
+    const body = await req.json();
+    const lastName = body.lastName || "";
+    const bookingReference = body.bookingReference || "";
     const userId = await getUserIdFromToken(req);
 
     // first ensure that in all cases user exists and logged in
@@ -50,6 +41,6 @@ export async function GET(req) {
     if(result && result.error) {
         return NextResponse.json(result, { status: 400 });
     }
-    return NextResponse.json({verified: true ? result.status === "CONFIRMED" : false});
+    return NextResponse.json({ verified: result.status === "CONFIRMED" });
 }
 

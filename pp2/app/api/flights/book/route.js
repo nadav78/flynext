@@ -56,6 +56,7 @@ export async function POST(req) {
     }
     const bookingReference = bookResponse.bookingReference;
     const ticketNumber = bookResponse.ticketNumber;
+    const tripId = bookResponse.tripId;
 
-    return NextResponse.json({ message: "Booking successful", bookingReference: bookingReference, ticketNumber: ticketNumber }, { status: 200 });
+    return NextResponse.json({ message: "Booking successful", bookingReference, ticketNumber, tripId }, { status: 200 });
 }

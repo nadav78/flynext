@@ -37,7 +37,8 @@ const reservationCreationSchema = z.object({
     hotel_id: z.number().int(),
     room_type_id: z.number().int(),
     check_in_time: z.coerce.date(),
-    check_out_time: z.coerce.date()
+    check_out_time: z.coerce.date(),
+    trip_id: z.number().int().optional(),
 }).refine(data => data.check_in_time < data.check_out_time, {
     message: "Check-in time must be before check-out time",
     path: ["check_out_time"]
@@ -112,23 +113,26 @@ export async function POST(req) {
                 throw new Error("Hotel not found");
             }
 
+                // Determine which TripItinerary to link this reservation to
+            let tripItineraryId = validData.trip_id || null;
+            if (!tripItineraryId) {
+                // Hotel-only booking: create a new TripItinerary
+                const nights = Math.ceil(
+                    (validData.check_out_time - validData.check_in_time) / (1000 * 60 * 60 * 24)
+                );
+                const totalPrice = parseFloat(roomType.price_per_night || 0) * nights;
+                const newTrip = await tx.tripItinerary.create({
+                    data: { userId, total_price: totalPrice }
+                });
+                tripItineraryId = newTrip.id;
+            }
+
             const reservation = await tx.hotelReservation.create({
                 data: {
-                    hotel: {
-                        connect: {
-                            id: validData.hotel_id
-                        }
-                    },
-                    roomType: {
-                        connect: {
-                            id: validData.room_type_id
-                        }
-                    },
-                    reserver: {
-                        connect: {
-                            id: userId
-                        }
-                    },
+                    hotel: { connect: { id: validData.hotel_id } },
+                    roomType: { connect: { id: validData.room_type_id } },
+                    reserver: { connect: { id: userId } },
+                    TripItinerary: { connect: { id: tripItineraryId } },
                     check_in_time: validData.check_in_time,
                     check_out_time: validData.check_out_time
                 }
@@ -168,7 +172,7 @@ export async function POST(req) {
                 }
             });
             
-            return reservation
+            return { ...reservation, tripItineraryId };
         });
 
         return NextResponse.json(reservation, { status: 201 });

@@ -23,7 +23,7 @@ export async function POST(req) {
     }
 
     const bookingReference = body.bookingReference || ""; // required
-    const lastName = body.ticketNumber || ""; // required
+    const lastName = body.lastName || ""; // required
     const response = await cancelFlight(bookingReference, lastName);
     if (!response.success) {
         return NextResponse.json({ error: "Cancellation failed" }, { status: 400 });

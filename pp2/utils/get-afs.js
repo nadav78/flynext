@@ -236,30 +236,25 @@ export async function bookFlight(
   const bookingReference = postResponseJson.bookingReference;
   const ticketNumber = postResponseJson.ticketNumber;
 
-  if(!tripItineraryId) {
-    // create new trip
-      const newTrip = await prisma.tripItinerary.create({
-        data: {
-          userId: userId,
-          afs_booking_reference: bookingReference,
-          afs_ticket_number: ticketNumber,
-          total_price: total_flight_price,
-        }
-      });
-      if (!newTrip) {
-        console.error("Failed to create trip itinerary");
-        return { error: "Failed to create trip itinerary" };
-      }
-  }
-  else {
-    const trip = await prisma.tripItinerary.findFirst({
-      where: {
-        id: tripItineraryId,
+  let resultTripId;
+  if (!tripItineraryId) {
+    const newTrip = await prisma.tripItinerary.create({
+      data: {
+        userId: userId,
+        afs_booking_reference: bookingReference,
+        afs_ticket_number: ticketNumber,
+        total_price: total_flight_price,
       }
     });
-    console.log(trip);
-    if(!trip) {
-      // create new trip
+    if (!newTrip) {
+      return { error: "Failed to create trip itinerary" };
+    }
+    resultTripId = newTrip.id;
+  } else {
+    const trip = await prisma.tripItinerary.findFirst({
+      where: { id: tripItineraryId }
+    });
+    if (!trip) {
       const newTrip = await prisma.tripItinerary.create({
         data: {
           userId: userId,
@@ -269,19 +264,14 @@ export async function bookFlight(
         }
       });
       if (!newTrip) {
-        console.error("Failed to create trip itinerary");
         return { error: "Failed to create trip itinerary" };
       }
-    }
-    else {
-      // update trip
-      const current_price = parseInt(trip.total_price);
-      console.log(current_price);
+      resultTripId = newTrip.id;
+    } else {
+      const current_price = parseInt(trip.total_price) || 0;
       const total_price = current_price + total_flight_price;
       const updatedTrip = await prisma.tripItinerary.update({
-        where: {
-          id: tripItineraryId,
-        },
+        where: { id: tripItineraryId },
         data: {
           afs_booking_reference: bookingReference,
           afs_ticket_number: ticketNumber,
@@ -289,14 +279,16 @@ export async function bookFlight(
         }
       });
       if (!updatedTrip) {
-        console.error("Failed to update trip itinerary");
         return { error: "Failed to update trip itinerary" };
       }
-      // cancel existing flight booking
-      await cancelFlight(bookingReference, lastName);
+      // cancel the old flight booking before replacing it
+      if (trip.afs_booking_reference) {
+        await cancelFlight(trip.afs_booking_reference, lastName);
+      }
+      resultTripId = updatedTrip.id;
     }
   }
-  return { success: "Flight booked successfully", bookingReference, ticketNumber };
+  return { success: "Flight booked successfully", bookingReference, ticketNumber, tripId: resultTripId };
 }
 
 /*

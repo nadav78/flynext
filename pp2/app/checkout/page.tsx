@@ -40,6 +40,7 @@ interface FlightBookingResponse {
     message?: string;
     bookingReference?: string;
     ticketNumber?: string;
+    tripId?: number;
     error?: string;
   }
 
@@ -160,23 +161,20 @@ export default function CheckoutPage() {
     }
   
     try {
-      // First create a trip itinerary if both flight and hotel exist
-      let tripId = null;
-      
-      // Book flight if selected
+      let tripId: number | null = null;
+
+      // Book flight first (creates a TripItinerary and returns its ID)
       if (flight) {
-        // Additional required fields for flight booking
-        
         const flightBookingData = {
-            firstName: user?.first_name || '',
-            lastName: user?.last_name || '',
-            email: user?.email || '',
-            tripItineraryId: tripId,
-            passportNumber: passportNumber, // Use the input value instead of hardcoded
-            firstFlightId: flight.id,
-            returnFlightId: '' // Add return flight if applicable
-          };
-  
+          firstName: user?.first_name || '',
+          lastName: user?.last_name || '',
+          email: user?.email || '',
+          tripItineraryId: null,
+          passportNumber: passportNumber,
+          firstFlightId: flight.id,
+          returnFlightId: ''
+        };
+
         const flightResponse = await fetch('/api/flights/book', {
           method: 'POST',
           headers: {
@@ -185,64 +183,59 @@ export default function CheckoutPage() {
           },
           body: JSON.stringify(flightBookingData),
         });
-  
+
         flightResult = await flightResponse.json();
-        
+
         if (!flightResponse.ok) {
-            throw new Error(flightResult?.error || 'Failed to book flight');
-          }
-          
-          // Store booking reference for invoice
-          localStorage.setItem('bookingReference', flightResult?.bookingReference || '');
-          localStorage.setItem('ticketNumber', flightResult?.ticketNumber || '');
+          throw new Error(flightResult?.error || 'Failed to book flight');
+        }
+
+        localStorage.setItem('bookingReference', flightResult?.bookingReference || '');
+        localStorage.setItem('ticketNumber', flightResult?.ticketNumber || '');
+        tripId = flightResult?.tripId ?? null;
       }
-      
-      // Book hotel if selected
+
+      // Book hotel, linking it to the trip created above (or creating a new trip for hotel-only)
       if (hotel) {
-        const hotelBookingData = {
+        const hotelBookingData: Record<string, unknown> = {
           hotel_id: parseInt(hotel.hotelId),
-          room_type_id: parseInt(hotel.roomTypeId), 
+          room_type_id: parseInt(hotel.roomTypeId),
           check_in_time: hotel.checkIn,
-          check_out_time: hotel.checkOut
+          check_out_time: hotel.checkOut,
         };
-  
+        if (tripId !== null) {
+          hotelBookingData.trip_id = tripId;
+        }
+
         const hotelResponse = await fetch('/api/hotels/reserve', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-id': user?.id?.toString() || '',
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
           },
           body: JSON.stringify(hotelBookingData),
         });
-  
+
         const hotelResult = await hotelResponse.json();
-        
+
         if (!hotelResponse.ok) {
           throw new Error(hotelResult.error || 'Failed to book hotel');
         }
-        
-        // Store hotel reservation ID
-        tripId = hotelResult.id;
+
+        // Use the trip from hotel result if we don't already have one (hotel-only booking)
+        if (tripId === null) {
+          tripId = hotelResult.tripItineraryId ?? null;
+        }
       }
-  
-      // Clear selected items
+
       localStorage.removeItem('selectedFlight');
       localStorage.removeItem('selectedHotel');
-      
-      // Show success state
       setSuccess(true);
-      
-      // Redirect to invoice/bookings page after a delay
+
       setTimeout(() => {
         if (tripId) {
-          // Hotel booking has an ID we can use
           router.push(`/invoice/${tripId}`);
-        } else if (flightResult && flightResult.bookingReference) {
-          // Flight booking has a reference
-          router.push(`/bookings?reference=${flightResult.bookingReference}`);
         } else {
-          // Fallback
           router.push('/bookings');
         }
       }, 2000);
