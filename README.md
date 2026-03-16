@@ -1,79 +1,76 @@
-# FlyNext (CSC309) — Group Project
+# FlyNext
 
-A full‑stack travel app for searching flights and hotels, reserving rooms, booking flights, checking out with card validation (no real charges), viewing invoices, and receiving notifications.
+A full-stack travel booking platform for searching flights and hotels, reserving rooms, checking out, managing trips, and downloading PDF invoices.
 
-## Group Project
-- This repository contains team work completed for CSC309. Multiple contributors worked across backend, frontend, and infrastructure.
-
-## Personal Contributions
-- Checkout flow: `pp2/app/checkout/page.tsx` (card validation, flow control)
-- Hotel reservation UX: `pp2/app/hotels/page.tsx` (reserve + localStorage handoff)
-- Notifications UI: `pp2/components/Navbar.tsx` (polling + badge)
-- Flight booking integration: `pp2/app/flights/results/page.tsx` (handoff to checkout)
+**Live:** https://flynext-zeta.vercel.app
 
 ## Tech Stack
-- Next.js (App Router), TypeScript, React
-- Prisma ORM + PostgreSQL
-- Tailwind CSS
-- REST API under `pp2/app/api/*`
-- Docker Compose for local infra
 
-## Project Structure
-- `pp2/app/*`: Next.js routes (pages + API)
-- `pp2/prisma/*`: Prisma schema and migrations
-- `pp2/components/*`: UI components
-- `pp2/utils/*`: Auth/validation helpers
-- `docker-compose.yml`: Local services and wiring
-- `group_responsibilities.txt`: Team roles/tasks
+- **Framework:** Next.js 15 (App Router) + TypeScript
+- **Database:** PostgreSQL via Prisma ORM (Neon on production)
+- **Auth:** JWT (access + refresh tokens), middleware-enforced protected routes
+- **Styling:** Tailwind CSS + daisyUI
+- **Deployment:** Vercel
 
-## Prerequisites
-- Node 18+ and npm
-- PostgreSQL (local or via Docker)
-- Docker Desktop (optional, for Compose)
-- Environment variables in `pp2/.env` (not committed)
+## Features
 
-Minimum `pp2/.env`:
-- `DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DBNAME`
-- `JWT_SECRET=replace_me`
-- (Optional) `AFS_BASE_URL`, other keys if used
+- **Flight search** — search by origin/destination/date with one-way and round-trip support; autocomplete airport/city input
+- **Hotel search** — search by city with check-in/check-out dates; filter by star rating, price, and amenities
+- **Checkout** — cart-based flow combining a flight booking and/or hotel reservation into a single trip with payment
+- **Trips & invoices** — view all past trips, cancel individual flights or hotel reservations, and download a branded PDF invoice per trip
+- **Hotel management** — hotel owners can create and manage their hotels and room types
+- **Notifications** — navbar badge with polling for booking and cancellation events
+- **Profile** — update name, email, phone, password, and profile photo
 
-## Local Development
+## Local Setup
+
 ```bash
 cd pp2
 npm install
-npx prisma generate
-npx prisma migrate dev
+```
+
+Create `pp2/.env`:
+
+```
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DBNAME
+JWT_SECRET=your_secret
+```
+
+Then run:
+
+```bash
+npx prisma migrate deploy
+npm run seed       # seeds airports, locations, and sample hotels
 npm run dev
 ```
 
-App runs at http://localhost:3000
+App runs at http://localhost:3000.
 
-## Run with Docker
-```bash
-docker compose up -d --build
-# stop
-docker compose down
+## Project Structure
+
+```
+pp2/
+  app/
+    page.tsx              # Landing page
+    flights/              # Flight search + results
+    hotels/               # Hotel search
+    bookings/             # Pre-checkout review
+    checkout/             # Payment & booking finalization
+    trips/                # Trip history
+    invoice/[id]/         # Trip detail + PDF download + cancellation
+    manage-hotels/        # Hotel owner dashboard
+    profile/              # User profile
+    api/                  # REST API routes
+  components/             # Navbar, ProtectedRoute, Autocomplete, etc.
+  prisma/
+    schema.prisma
+    seed.js
+  utils/
+    get-afs.js            # Mock flight data layer (search, book, verify, cancel)
 ```
 
-Notes:
-- Do not commit secrets. Keep `.env` and `pp2/api-keys.txt` out of version control.
-- Data import should be done via scripts/compose services; do not commit DB dumps.
-
-## Data
-- Schema managed by Prisma migrations (`pp2/prisma/migrations`).
-- For demo content (e.g., ≥50 hotels across multiple cities), use import scripts and run them via Compose/startup scripts.
-
-## Key Features
-- Hotel search (public) with filters (city, name, stars, price)
-- Room reservation with availability checks
-- Flight booking (AFS integration)
-- Checkout with card validation (no real charges)
-- Notifications (polling badge in navbar)
-- Invoices page (PDF download if enabled)
-
-## Deployment
-- Provide your deployed URL in `url.txt` (single line).
-- HTTPS endpoint recommended.
-
 ## Notes
-- This repo includes team contributions. My individual work is listed above.
+
+- This started as a group project for CSC309 at the University of Toronto. Post-submission, I extended and fixed it significantly: deployed to Vercel + Neon, fixed the booking flow, added hotel booking references, improved the PDF invoice, and resolved several bugs.
+- No real charges are made — card validation is simulated.
+- Flight data is served by a mock layer (`utils/get-afs.js`) using a seeded PRNG.
