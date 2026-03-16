@@ -1,435 +1,365 @@
-import fs from "fs/promises";
-import path from "path";
-import querystring from "querystring";
+/**
+ * Amadeus flight API integration
+ * Replaces the original AFS (course) API with the free Amadeus Self-Service API.
+ * Test credentials: https://developers.amadeus.com (free, no credit card)
+ */
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+const BASE_URL = 'https://test.api.amadeus.com';
 
-const API_KEY_FILE = path.join(process.cwd(), "api-keys.txt");
-const BASE_URL = "https://advanced-flights-system.replit.app";
+// ─── OAuth2 token cache ───────────────────────────────────────────────────────
+let tokenCache = { token: null, expiresAt: 0 };
 
-/*
-* Retrieves the API key from the api-keys.txt file
-* @returns {string} - The API key.
-*/
-export async function getAPIKey() {
-  try {
-    const apiKey = await fs.readFile(API_KEY_FILE, "utf-8");
-    return apiKey.trim();
-  } catch (error) {
-    console.error("Error reading API key:", error);
-    throw new Error("API key not found. Ensure api-keys.txt exists/key is valid.");
+async function getToken() {
+  if (tokenCache.token && Date.now() < tokenCache.expiresAt) return tokenCache.token;
+  const res = await fetch(`${BASE_URL}/v1/security/oauth2/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: process.env.AMADEUS_CLIENT_ID ?? '',
+      client_secret: process.env.AMADEUS_CLIENT_SECRET ?? '',
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Amadeus auth failed: ${err}`);
   }
-}
-
-export async function getAFSFlightDetailsById(flightId) {
-  const apiKey =  await getAPIKey();
-  const url = `${BASE_URL}/api/flights/${flightId}`;
-
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-    });
-    if (!response.ok) {
-      console.error("Error fetching flight details:", response.status, response.statusText, await response.text());
-      throw new Error(`AFS API error`);
-    }
-    return await response.json();
-  }
-  catch (error) {
-    console.error("Error fetching flight details:", error);
-    return { error: "Failed to fetch flight details" };
-  }
-}
-
-export async function cancelFlight(bookingReference, lastName) {
-  const apiKey = await getAPIKey();
-  const url = `${BASE_URL}/api/bookings/cancel`;
-  const body = {"bookingReference" : bookingReference, 
-                "lastName" : lastName};
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await response.json();
-    if(response.status !== 200) {
-      console.error("Error cancelling flight through AFS:", response.status);
-    }
-    if(data.status !== "CANCELLED") {
-      return {error: "Flight through AFS still shows up as not cancelled."};
-    }
-    return { success: "Flight cancelled on AFS successfully."};
-  } catch (error) {
-    console.error("Error cancelling flight through AFS:", error);
-    return { error: "Failed to cancel flight" };
-  }
-}
-
-/*
-* Retrieves flight details from the AFS API
-* @param {Object} params - Flight details.
-* @param {string} params.origin - The origin city or airport code.
-* @param {string} params.destination - The destination city or airport code.
-* @param {string} params.departure - The departure date.
-* @returns {Object} - Flight details or an error message.
-*/
-export async function getAFSFlightDetails(params) {
-  // check that params are {origin, destination, date}
-  const userParams = {
-    origin: params.origin,
-    destination: params.destination,
-    date: params.departure,
+  const data = await res.json();
+  tokenCache = {
+    token: data.access_token,
+    expiresAt: Date.now() + (data.expires_in - 60) * 1000,
   };
+  return tokenCache.token;
+}
 
-  // confirm userparams are valid just in case
-  if (!userParams.origin || !userParams.destination || !userParams.date) {
-    console.error("Invalid user params:", userParams);
-    return { error: "Invalid user params" };
-  }
+// ─── In-memory offer cache (offerId → { offer, dictionaries }) ────────────────
+const offerCache = new Map();
 
+function cacheOffer(offer, dictionaries) {
+  const id = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  offerCache.set(id, { offer, dictionaries });
+  // prevent unbounded growth
+  if (offerCache.size > 500) offerCache.delete(offerCache.keys().next().value);
+  return id;
+}
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+function parseDurationMins(iso = '') {
+  const h = parseInt(iso.match(/(\d+)H/)?.[1] ?? '0', 10);
+  const m = parseInt(iso.match(/(\d+)M/)?.[1] ?? '0', 10);
+  return h * 60 + m;
+}
+
+function buildFlight(segment, offerId, price, currency, seats, dictionaries) {
+  const loc = dictionaries?.locations ?? {};
+  return {
+    id: offerId,
+    flightNumber: `${segment.carrierCode}${segment.number}`,
+    departureTime: segment.departure.at,
+    arrivalTime: segment.arrival.at,
+    duration: parseDurationMins(segment.duration),
+    price: parseFloat(price) || 0,
+    currency: currency ?? 'USD',
+    status: 'SCHEDULED',
+    availableSeats: seats ?? 9,
+    airline: {
+      code: segment.carrierCode,
+      name: dictionaries?.carriers?.[segment.carrierCode] ?? segment.carrierCode,
+    },
+    origin: {
+      code: segment.departure.iataCode,
+      name: segment.departure.iataCode,
+      city: loc[segment.departure.iataCode]?.cityCode ?? segment.departure.iataCode,
+      country: loc[segment.departure.iataCode]?.countryCode ?? '',
+    },
+    destination: {
+      code: segment.arrival.iataCode,
+      name: segment.arrival.iataCode,
+      city: loc[segment.arrival.iataCode]?.cityCode ?? segment.arrival.iataCode,
+      country: loc[segment.arrival.iataCode]?.countryCode ?? '',
+    },
+  };
+}
+
+// ─── Flight search ────────────────────────────────────────────────────────────
+export async function getAFSFlightDetails({ origin, destination, departure }) {
+  if (!origin || !destination || !departure) return { error: 'Missing search params' };
   try {
-    const apiKey = await getAPIKey();
-    const queryString = querystring.stringify(userParams);
-    const url = `${BASE_URL}/api/flights?${queryString}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
+    const token = await getToken();
+    const params = new URLSearchParams({
+      originLocationCode: origin,
+      destinationLocationCode: destination,
+      departureDate: departure,
+      adults: '1',
+      max: '20',
     });
-
-    if (!response.ok) {
-      console.error("Error fetching flight details:", response.status, response.statusText, await response.text());
-      throw new Error(`AFS API error`);
+    const res = await fetch(`${BASE_URL}/v2/shopping/flight-offers?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { error: err.errors?.[0]?.detail ?? 'Failed to search flights' };
     }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching flight details:", error);
-    return { error: "Failed to fetch flight details" };
+    const data = await res.json();
+    const results = (data.data ?? []).map(offer => {
+      const offerId = cacheOffer(offer, data.dictionaries);
+      const itinerary = offer.itineraries[0];
+      return {
+        legs: itinerary.segments.length,
+        flights: itinerary.segments.map(seg =>
+          buildFlight(seg, offerId, offer.price.total, offer.price.currency, offer.numberOfBookableSeats, data.dictionaries)
+        ),
+      };
+    });
+    return { results };
+  } catch (err) {
+    console.error('Flight search error:', err.message);
+    return { error: 'Failed to search flights' };
   }
 }
 
-/*
-* Retrieves autocomplete suggestions for cities or airports from the AFS API
-* @param {string} queryType - The type of query to perform. Either "cities" or "airports".
-* @returns {Object} - List of (sorted) autocomplete suggestions or an error message.
-*/
+// ─── Single flight lookup (by cached offer ID) ────────────────────────────────
+export async function getAFSFlightDetailsById(offerId) {
+  const cached = offerCache.get(offerId);
+  if (!cached) return { error: 'Flight not found — offer may have expired. Please search again.' };
+  const { offer, dictionaries } = cached;
+  const seg = offer.itineraries[0].segments[0];
+  return buildFlight(seg, offerId, offer.price.total, offer.price.currency, offer.numberOfBookableSeats, dictionaries);
+}
+
+// ─── Autocomplete (reads from local DB seeded on first run) ───────────────────
 export async function getAutocomplete(queryType) {
-  if (!queryType || (queryType !== "cities" && queryType !== "airports")) {
-    console.error("Invalid query type:", queryType);
-    return { error: "Invalid query type" };
-  }
-
   try {
-    const apiKey = await getAPIKey();
-    const url = `${BASE_URL}/api/${queryType === "cities" ? "cities" : "airports"}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`AFS API error: ${response.status} ${response.statusText}`);
+    if (queryType === 'cities') {
+      return await prisma.location.findMany({ take: 300 });
     }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching autocomplete suggestions:", error);
-    return { error: "Failed to fetch suggestions" };
+    return await prisma.airport.findMany({ take: 300 });
+  } catch {
+    return [];
   }
 }
 
-/*
-* Books a flight through the AFS API for a logged in user
- * @param {Object} params - User and flight details.
- * @param {string} params.userId - The ID of the user booking the flight.
- * @param {string} params.id - The unique Prisma user ID of the user.
- * @param {string} params.firstName - The flight number.
- * @param {Date} params.lastName - The departure date of the flight.
- * @param {number} params.email - The number of passengers.
- * @param {number} params.passportNumber - The passport number of the passenger.
- * @param {string} params.firstFlightId - The ID of the first flight.
- * @param {string} [params.returnFlightId] - The ID of the return flight 
-* @returns {Object} - Success message or error from AFS.
-*/
+// ─── Book flight ──────────────────────────────────────────────────────────────
 export async function bookFlight(
-  {userId,
-  firstName,
-  lastName,
-  email,
-  passportNumber,
-  flightIds},
-  tripItineraryId) 
-{
-  const userDetails = await prisma.user.findFirst({
-    where: {
-      id: userId
-    },
-  });
-
-  if (!userDetails) {
-    console.error(`Invalid user with ID ${userId}`);
-    return { error: "User not found" };
+  { userId, firstName, lastName, email, passportNumber, flightIds },
+  tripItineraryId
+) {
+  const offerId = flightIds[0];
+  const cached = offerCache.get(offerId);
+  if (!cached) {
+    return { error: 'Flight offer has expired. Please go back and select your flight again.' };
   }
+  const { offer } = cached;
 
-  if (!firstName || !lastName) {
-    console.error("First and last name required to book flight");
-    return { error: "First and last name required to book flight" };
-  }
-  if (!email) {
-    console.error("Email required to book flight");
-    return { error: "Email required to book flight" };
-  }
-  if (!passportNumber) {
-    console.error("Passport number required to book flight");
-    return { error: "Passport number required to book flight" };
-  }
-  if (!flightIds || flightIds.length === 0) {
-    console.error("First flight ID required to book flight");
-    return { error: "First flight ID required to book flight" };
-  }
+  const userDetails = await prisma.user.findFirst({ where: { id: userId } });
+  if (!userDetails) return { error: 'User not found' };
+  if (!firstName || !lastName) return { error: 'First and last name required' };
+  if (!email) return { error: 'Email required' };
+  if (!passportNumber) return { error: 'Passport number required' };
 
-  const apiKey = await getAPIKey();
-  const url = `${BASE_URL}/api/bookings`;
+  try {
+    const token = await getToken();
 
-  const postResponse = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-    },
-    body: JSON.stringify({
-      userId,
-      firstName,
-      lastName,
-      email,
-      passportNumber,
-      flightIds}),
-  });
-
-  if (!postResponse.ok) {
-    console.error("Error booking flight:", postResponse.status, postResponse.statusText, await postResponse.text());
-    return { error: "Failed to book flight", status: postResponse.status };
-  }
-
-  const postResponseJson = await postResponse.json();
-  // either 1 or 2 flights in postResponse.flights[0/1].price
-  // so add both of them if second exists, otherwise just first one
-  const total_flight_price = postResponseJson.flights.at(0).price +
-    (postResponseJson.flights.at(1).price ? postResponseJson.flights.at(1).price : 0);
-  const bookingReference = postResponseJson.bookingReference;
-  const ticketNumber = postResponseJson.ticketNumber;
-
-  let resultTripId;
-  if (!tripItineraryId) {
-    const newTrip = await prisma.tripItinerary.create({
-      data: {
-        userId: userId,
-        afs_booking_reference: bookingReference,
-        afs_ticket_number: ticketNumber,
-        total_price: total_flight_price,
-      }
+    // Amadeus requires a pricing call before creating an order
+    const priceRes = await fetch(`${BASE_URL}/v1/shopping/flight-offers/pricing`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: { type: 'flight-offers-pricing', flightOffers: [offer] } }),
     });
-    if (!newTrip) {
-      return { error: "Failed to create trip itinerary" };
+    if (!priceRes.ok) {
+      const err = await priceRes.json().catch(() => ({}));
+      return { error: err.errors?.[0]?.detail ?? 'Failed to confirm flight price' };
     }
-    resultTripId = newTrip.id;
-  } else {
-    const trip = await prisma.tripItinerary.findFirst({
-      where: { id: tripItineraryId }
-    });
-    if (!trip) {
-      const newTrip = await prisma.tripItinerary.create({
+    const priceData = await priceRes.json();
+    const pricedOffer = priceData.data.flightOffers[0];
+    const total_flight_price = parseFloat(pricedOffer.price.total);
+
+    // Create the booking
+    const bookRes = await fetch(`${BASE_URL}/v1/booking/flight-orders`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         data: {
-          userId: userId,
-          afs_booking_reference: bookingReference,
-          afs_ticket_number: ticketNumber,
-          total_price: total_flight_price,
-        }
+          type: 'flight-order',
+          flightOffers: [pricedOffer],
+          travelers: [{
+            id: '1',
+            dateOfBirth: '1990-01-01',
+            name: { firstName, lastName },
+            gender: 'MALE',
+            contact: {
+              emailAddress: email,
+              phones: [{ deviceType: 'MOBILE', countryCallingCode: '1', number: '5550000000' }],
+            },
+            documents: [{
+              documentType: 'PASSPORT',
+              birthPlace: 'Toronto',
+              issuanceLocation: 'Toronto',
+              issuanceDate: '2015-04-14',
+              number: String(passportNumber),
+              expiryDate: '2030-01-01',
+              issuanceCountry: 'CA',
+              validityCountry: 'CA',
+              nationality: 'CA',
+              holder: true,
+            }],
+          }],
+        },
+      }),
+    });
+    if (!bookRes.ok) {
+      const err = await bookRes.json().catch(() => ({}));
+      return { error: err.errors?.[0]?.detail ?? 'Booking failed' };
+    }
+    const bookData = await bookRes.json();
+    const orderId = bookData.data.id;
+    // Amadeus order ID is the primary reference; GDS PNR stored as associatedRecord
+    const bookingReference = orderId;
+    const ticketNumber = bookData.data.associatedRecords?.[0]?.reference ?? orderId;
+
+    // Persist TripItinerary
+    let resultTripId;
+    if (!tripItineraryId) {
+      const newTrip = await prisma.tripItinerary.create({
+        data: { userId, afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: total_flight_price },
       });
-      if (!newTrip) {
-        return { error: "Failed to create trip itinerary" };
-      }
+      if (!newTrip) return { error: 'Failed to create trip itinerary' };
       resultTripId = newTrip.id;
     } else {
-      const current_price = parseInt(trip.total_price) || 0;
-      const total_price = current_price + total_flight_price;
-      const updatedTrip = await prisma.tripItinerary.update({
-        where: { id: tripItineraryId },
-        data: {
-          afs_booking_reference: bookingReference,
-          afs_ticket_number: ticketNumber,
-          total_price: total_price,
+      const trip = await prisma.tripItinerary.findFirst({ where: { id: tripItineraryId } });
+      if (!trip) {
+        const newTrip = await prisma.tripItinerary.create({
+          data: { userId, afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: total_flight_price },
+        });
+        if (!newTrip) return { error: 'Failed to create trip itinerary' };
+        resultTripId = newTrip.id;
+      } else {
+        const current_price = parseFloat(trip.total_price) || 0;
+        const updatedTrip = await prisma.tripItinerary.update({
+          where: { id: tripItineraryId },
+          data: { afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: current_price + total_flight_price },
+        });
+        if (!updatedTrip) return { error: 'Failed to update trip itinerary' };
+        if (trip.afs_booking_reference) {
+          await cancelFlight(trip.afs_booking_reference, lastName);
         }
-      });
-      if (!updatedTrip) {
-        return { error: "Failed to update trip itinerary" };
+        resultTripId = updatedTrip.id;
       }
-      // cancel the old flight booking before replacing it
-      if (trip.afs_booking_reference) {
-        await cancelFlight(trip.afs_booking_reference, lastName);
-      }
-      resultTripId = updatedTrip.id;
     }
+    return { success: 'Flight booked successfully', bookingReference, ticketNumber, tripId: resultTripId };
+  } catch (err) {
+    console.error('Booking error:', err.message);
+    return { error: 'Booking failed: ' + err.message };
   }
-  return { success: "Flight booked successfully", bookingReference, ticketNumber, tripId: resultTripId };
 }
 
-/*
-* Verifies a flight through the AFS API
- * @param {Object} params - Flight details.
- * @param {string} params.lastName - User's last name
- * @param {string} params.bookingReference - Booking reference
- * @returns {Object} - Success message or error from AFS.
-*/
-export async function verifyFlight(params) {
-  const userParams = {
-    lastName: params.lastName,
-    bookingReference: params.bookingReference,
-  };
-  if (!userParams.lastName) {
-    console.error("Last name required to verify flight");
-    return { error: "Last name required to verify flight" };
-  }
-  if (!userParams.bookingReference) {
-    console.error("Booking reference required to verify flight");
-    return { error: "Booking reference required to verify flight" };
-  }
+// ─── Verify booking ───────────────────────────────────────────────────────────
+export async function verifyFlight({ lastName, bookingReference }) {
+  if (!bookingReference) return { error: 'Booking reference required' };
+  try {
+    const token = await getToken();
+    const res = await fetch(
+      `${BASE_URL}/v1/booking/flight-orders/${encodeURIComponent(bookingReference)}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) return { error: 'Failed to verify booking' };
+    const data = await res.json();
 
-  const apiKey = await getAPIKey();
-  const url = `${BASE_URL}/api/verify`;
-
-  const postResponse = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-    },
-    body: JSON.stringify(userParams),
-  });
-
-  if (!postResponse.ok) {
-    console.error("Error verifying flight:", postResponse.status, postResponse.statusText, await postResponse.text());
-    return { error: "Failed to verify flight" };
+    // Map Amadeus order segments → the flight shape the invoice page expects
+    const flightOffers = data.data?.flightOffers ?? [];
+    const dictionaries = data.dictionaries ?? {};
+    const flights = [];
+    for (const fo of flightOffers) {
+      for (const itinerary of (fo.itineraries ?? [])) {
+        for (const segment of (itinerary.segments ?? [])) {
+          flights.push(buildFlight(segment, bookingReference, fo.price?.total ?? '0', fo.price?.currency ?? 'USD', null, dictionaries));
+        }
+      }
+    }
+    return { status: 'CONFIRMED', flights };
+  } catch {
+    return { error: 'Failed to verify booking' };
   }
-  return await postResponse.json();
 }
 
+// ─── Cancel flight ────────────────────────────────────────────────────────────
+export async function cancelFlight(bookingReference, _lastName) {
+  if (!bookingReference) return { success: false };
+  try {
+    const token = await getToken();
+    const res = await fetch(
+      `${BASE_URL}/v1/booking/flight-orders/${encodeURIComponent(bookingReference)}`,
+      { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }
+    );
+    return { success: res.status === 200 || res.status === 204 };
+  } catch {
+    return { success: false };
+  }
+}
 
-/*
- * Retrieves cities from AFS and populates local db
- * @returns {Object} - Success message or error from AFS.
- */
+// ─── DB seeding ───────────────────────────────────────────────────────────────
+// These seed the Location and Airport tables on first startup using the
+// Amadeus reference-data API so the autocomplete works.
+
 export async function populateLocations() {
+  const existing = await prisma.location.count();
+  if (existing > 0) return { success: 'Locations already seeded' };
   try {
-    const apiKey = await getAPIKey();
-    const url = `${BASE_URL}/api/cities`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`AFS API error: ${response.status} ${response.statusText}`);
+    const token = await getToken();
+    const res = await fetch(
+      `${BASE_URL}/v1/reference-data/locations?subType=CITY&view=LIGHT&max=250`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) return { error: 'Failed to fetch locations' };
+    const data = await res.json();
+    for (const loc of (data.data ?? [])) {
+      const city = loc.address?.cityName ?? loc.name ?? '';
+      const country = loc.address?.countryName ?? '';
+      if (!city) continue;
+      await prisma.location.upsert({
+        where: { unique_location: { city, country } },
+        update: {},
+        create: { city, country },
+      }).catch(() => {});
     }
-    const locations = await response.json();
-
-    // insert locations into db
-    for (const location of locations) {
-      await prisma.location.create({
-        data: {
-          city: location.city,
-          country: location.country
-        },
-      });
-    }
-    return { success: "Locations populated successfully" };
-  } catch (error) {
-    console.error("Error populating locations:", error);
-    return { error: "Failed to populate locations" };
+    return { success: `Seeded ${data.data?.length ?? 0} locations` };
+  } catch (err) {
+    return { error: 'Failed to populate locations: ' + err.message };
   }
 }
 
-
-/*
- * Retrieves airports from AFS and populates local db
- * @returns {Object} - Success message or error from AFS.
- */
 export async function populateAirports() {
+  const existing = await prisma.airport.count();
+  if (existing > 0) return { success: 'Airports already seeded' };
   try {
-    const apiKey = await getAPIKey();
-    const url = `${BASE_URL}/api/airports`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`AFS API error: ${response.status} ${response.statusText}`);
-    }
-    const airports = await response.json();
-
-    // insert airports into db
-    for (const airport of airports) {
+    const token = await getToken();
+    const res = await fetch(
+      `${BASE_URL}/v1/reference-data/locations?subType=AIRPORT&view=LIGHT&max=250`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) return { error: 'Failed to fetch airports' };
+    const data = await res.json();
+    for (const ap of (data.data ?? [])) {
+      const city = ap.address?.cityName ?? '';
+      const country = ap.address?.countryName ?? '';
+      let location = await prisma.location.findFirst({ where: { city, country } });
+      if (!location) {
+        location = await prisma.location.create({ data: { city, country } }).catch(() => null);
+      }
+      if (!location) continue;
       await prisma.airport.create({
-        data: {
-          afs_id: airport.id,
-          code: airport.code,
-          name: airport.name,
-          Location: {
-            connect: {
-              unique_location: {
-                city: airport.city,
-                country: airport.country
-              }
-            }
-          }
-        },
-      });
+        data: { afs_id: ap.iataCode, code: ap.iataCode, name: ap.name, locationId: location.id },
+      }).catch(() => {});
     }
-    return { success: "Airports populated successfully" };
-  } catch (error) {
-    console.error("Error populating airports:", error);
-    return { error: "Failed to populate airports" };
+    return { success: `Seeded ${data.data?.length ?? 0} airports` };
+  } catch (err) {
+    return { error: 'Failed to populate airports: ' + err.message };
   }
 }
 
 export async function getInitialData() {
-  try {
-    await prisma.hotelReservation.deleteMany();
-    await prisma.hotelRoomType.deleteMany();
-    await prisma.hotel.deleteMany();
-    await prisma.airport.deleteMany();
-    await prisma.location.deleteMany();
-
-    await populateLocations();
-    await populateAirports();
-
-    return { success: "Initial data populated successfully" };
-  } catch (error) {
-    console.error("Error fetching initial data:", error);
-    return { error: "Failed to fetch initial data" };
-  }
+  const [locResult, apResult] = await Promise.all([populateLocations(), populateAirports()]);
+  return { locations: locResult, airports: apResult };
 }

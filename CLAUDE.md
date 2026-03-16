@@ -85,6 +85,16 @@ JWT_REFRESH_SECRET=...
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password123
 POSTGRES_DB=flynextdb
+AMADEUS_CLIENT_ID=...       # from developers.amadeus.com (free)
+AMADEUS_CLIENT_SECRET=...   # from developers.amadeus.com (free)
 ```
 
 For Docker, `DATABASE_URL` should point to `db` host: `postgresql://postgres:postgres@db:5432/flynext`.
+
+### Getting Amadeus credentials (free)
+1. Sign up at https://developers.amadeus.com
+2. Go to **My Self-Service Workspace** → **Create New App**
+3. Copy the **API Key** (→ `AMADEUS_CLIENT_ID`) and **API Secret** (→ `AMADEUS_CLIENT_SECRET`)
+4. The free test environment (`test.api.amadeus.com`) is used by default — no credit card needed
+
+On first startup, the app seeds the Location and Airport tables from the Amadeus reference-data API automatically.
