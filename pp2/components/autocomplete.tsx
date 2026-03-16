@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Combobox } from "@headlessui/react";
 
-const AirportAutocomplete = ({ label, selected, setSelected }) => {
+const AirportAutocomplete = ({ label, selected, setSelected }: { label: string; selected: any; setSelected: (v: any) => void }) => {
   const [query, setQuery] = useState("");
-  const [allAirports, setAllAirports] = useState([]);
-  const [filteredAirports, setFilteredAirports] = useState([]);
+  const [allAirports, setAllAirports] = useState<any[]>([]);
+  const [filteredAirports, setFilteredAirports] = useState<any[]>([]);
 
   // Load all airports on mount
   useEffect(() => {
@@ -41,7 +41,7 @@ const AirportAutocomplete = ({ label, selected, setSelected }) => {
       <Combobox value={selected} onChange={setSelected}>
         <Combobox.Input
           onChange={(e) => setQuery(e.target.value)}
-          displayValue={(airport) =>
+          displayValue={(airport: any) =>
             airport ? `${airport.code} - ${airport.city}, ${airport.country}` : ""
           }
           placeholder="Type airport code or city..."
