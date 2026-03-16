@@ -92,6 +92,7 @@ export async function GET(req, { params }) {
         checkIn: reservation.check_in_time.toISOString(),
         checkOut: reservation.check_out_time.toISOString(),
         cancelled: reservation.is_cancelled,
+        bookingReference: reservation.booking_reference || null,
         price: reservation.roomType.price_per_night ?
                (parseFloat(reservation.roomType.price_per_night) *
                Math.ceil((reservation.check_out_time - reservation.check_in_time) / (1000 * 60 * 60 * 24))).toFixed(2) :

@@ -134,6 +134,8 @@ export async function POST(req) {
                 });
             }
 
+            const bookingReference = `HT${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
             const reservation = await tx.hotelReservation.create({
                 data: {
                     hotel: { connect: { id: validData.hotel_id } },
@@ -141,7 +143,8 @@ export async function POST(req) {
                     reserver: { connect: { id: userId } },
                     TripItinerary: { connect: { id: tripItineraryId } },
                     check_in_time: validData.check_in_time,
-                    check_out_time: validData.check_out_time
+                    check_out_time: validData.check_out_time,
+                    booking_reference: bookingReference,
                 }
             });
 

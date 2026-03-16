@@ -30,6 +30,7 @@ type Invoice = {
     checkOut: string;
     price: string;
     cancelled: boolean;
+    bookingReference: string | null;
   }>;
   flights: Array<{
     id: string;
@@ -365,7 +366,12 @@ export default function InvoicePage() {
                     key={reservation.id} 
                     className={`p-4 rounded-lg ${index % 2 === 0 ? 'bg-base-200' : ''}`}
                   >
-                    <div className="font-semibold mb-2">{reservation.hotelName}</div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-semibold">{reservation.hotelName}</div>
+                      {reservation.bookingReference && (
+                        <span className="font-mono text-sm text-base-content/60">{reservation.bookingReference}</span>
+                      )}
+                    </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                       <div>

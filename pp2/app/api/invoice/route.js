@@ -108,6 +108,7 @@ export async function POST(req) {
         if (i > 0) { divider(true); }
         y -= 4;
         row('Hotel',     res.hotel.name);
+        if (res.booking_reference) row('Booking Reference', res.booking_reference);
         row('Room',      res.roomType.name);
         row('Check-in',  new Date(res.check_in_time).toLocaleDateString('en-US', { dateStyle: 'medium' }));
         row('Check-out', new Date(res.check_out_time).toLocaleDateString('en-US', { dateStyle: 'medium' }));

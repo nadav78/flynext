@@ -100,20 +100,21 @@ model HotelRoomType {
 }
 
 model HotelReservation {
-  id              Int            @id @unique @default(autoincrement())
-  hotel           Hotel          @relation(fields: [hotelId], references: [id])
-  roomType        HotelRoomType  @relation(fields: [hotelRoomTypeId], references: [id])
-  reserver        User           @relation(fields: [userId], references: [id])
-  TripItinerary   TripItinerary? @relation(fields: [tripItineraryId], references: [id])
-  check_in_time   DateTime
-  check_out_time  DateTime
-  is_cancelled    Boolean        @default(false)
-  is_paid         Boolean        @default(false)
-  hotelId         Int
-  hotelRoomTypeId Int
-  userId          Int
-  tripItineraryId Int?
-  Notification    Notification[]
+  id                Int            @id @unique @default(autoincrement())
+  hotel             Hotel          @relation(fields: [hotelId], references: [id])
+  roomType          HotelRoomType  @relation(fields: [hotelRoomTypeId], references: [id])
+  reserver          User           @relation(fields: [userId], references: [id])
+  TripItinerary     TripItinerary? @relation(fields: [tripItineraryId], references: [id])
+  check_in_time     DateTime
+  check_out_time    DateTime
+  is_cancelled      Boolean        @default(false)
+  is_paid           Boolean        @default(false)
+  booking_reference String?
+  hotelId           Int
+  hotelRoomTypeId   Int
+  userId            Int
+  tripItineraryId   Int?
+  Notification      Notification[]
 }
 
 model TripItinerary {
