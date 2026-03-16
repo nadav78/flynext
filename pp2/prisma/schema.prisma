@@ -123,6 +123,7 @@ model TripItinerary {
   userId                Int
   afs_booking_reference String?
   afs_ticket_number     String?
+  flight_offer_ids      String? // Comma-separated mock offer IDs for flight reconstruction
   created_at            DateTime           @default(now())
   total_price           Decimal?
   invoice_url           String? // For storing PDF invoice links

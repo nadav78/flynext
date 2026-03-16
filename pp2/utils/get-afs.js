@@ -154,10 +154,12 @@ export async function bookFlight(
   const bookingReference = `FN${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
   const ticketNumber = `TKT-${Date.now()}`;
 
+  const offerIdsStr = flightIds.filter(Boolean).join(',');
+
   let resultTripId;
   if (!tripItineraryId) {
     const newTrip = await prisma.tripItinerary.create({
-      data: { userId, afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: total_flight_price },
+      data: { userId, afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: total_flight_price, flight_offer_ids: offerIdsStr },
     });
     if (!newTrip) return { error: 'Failed to create trip itinerary' };
     resultTripId = newTrip.id;
@@ -165,7 +167,7 @@ export async function bookFlight(
     const trip = await prisma.tripItinerary.findFirst({ where: { id: tripItineraryId } });
     if (!trip) {
       const newTrip = await prisma.tripItinerary.create({
-        data: { userId, afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: total_flight_price },
+        data: { userId, afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: total_flight_price, flight_offer_ids: offerIdsStr },
       });
       if (!newTrip) return { error: 'Failed to create trip itinerary' };
       resultTripId = newTrip.id;
@@ -173,7 +175,7 @@ export async function bookFlight(
       const current_price = parseFloat(trip.total_price) || 0;
       const updatedTrip = await prisma.tripItinerary.update({
         where: { id: tripItineraryId },
-        data: { afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: current_price + total_flight_price },
+        data: { afs_booking_reference: bookingReference, afs_ticket_number: ticketNumber, total_price: current_price + total_flight_price, flight_offer_ids: offerIdsStr },
       });
       if (!updatedTrip) return { error: 'Failed to update trip itinerary' };
       resultTripId = updatedTrip.id;
@@ -191,9 +193,16 @@ export async function verifyFlight({ lastName, bookingReference }) {
   });
   if (!trip) return { error: 'Booking not found' };
 
-  // Reconstruct flight details from the stored ticket number / offerId
-  // The invoice page uses this to populate the flights array
-  return { status: 'CONFIRMED', flights: [] };
+  // Reconstruct each booked flight from its stored offer ID
+  const flights = [];
+  if (trip.flight_offer_ids) {
+    for (const offerId of trip.flight_offer_ids.split(',').filter(Boolean)) {
+      const flight = await getAFSFlightDetailsById(offerId);
+      if (flight && !flight.error) flights.push(flight);
+    }
+  }
+
+  return { status: 'CONFIRMED', flights };
 }
 
 export async function cancelFlight(bookingReference, _lastName) {
