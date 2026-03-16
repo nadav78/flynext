@@ -28,6 +28,7 @@ type Invoice = {
     checkIn: string;
     checkOut: string;
     price: string;
+    cancelled: boolean;
   }>;
   flights: Array<{
     id: string;
@@ -400,13 +401,17 @@ export default function InvoicePage() {
                         <p className="text-sm text-base-content/70">Price</p>
                         <p className="font-semibold">${reservation.price}</p>
                       </div>
-                      <button
-                        onClick={() => cancelHotelReservation(reservation.id)}
-                        disabled={cancellingHotel === parseInt(reservation.id)}
-                        className="btn btn-error btn-sm"
-                      >
-                        {cancellingHotel === parseInt(reservation.id) ? 'Cancelling...' : 'Cancel'}
-                      </button>
+                      {reservation.cancelled ? (
+                        <span className="badge badge-error">Cancelled</span>
+                      ) : (
+                        <button
+                          onClick={() => cancelHotelReservation(reservation.id)}
+                          disabled={cancellingHotel === parseInt(reservation.id)}
+                          className="btn btn-error btn-sm"
+                        >
+                          {cancellingHotel === parseInt(reservation.id) ? 'Cancelling...' : 'Cancel'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

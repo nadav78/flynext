@@ -91,9 +91,10 @@ export async function GET(req, { params }) {
         roomType: reservation.roomType.name,
         checkIn: reservation.check_in_time.toISOString(),
         checkOut: reservation.check_out_time.toISOString(),
-        price: reservation.roomType.price_per_night ? 
-               (parseFloat(reservation.roomType.price_per_night) * 
-               Math.ceil((reservation.check_out_time - reservation.check_in_time) / (1000 * 60 * 60 * 24))).toFixed(2) : 
+        cancelled: reservation.is_cancelled,
+        price: reservation.roomType.price_per_night ?
+               (parseFloat(reservation.roomType.price_per_night) *
+               Math.ceil((reservation.check_out_time - reservation.check_in_time) / (1000 * 60 * 60 * 24))).toFixed(2) :
                '0'
       })),
       flights: flightDetails
