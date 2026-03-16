@@ -195,7 +195,7 @@ export default function InvoicePage() {
             <h1 className="text-2xl font-bold text-error mb-4">Error</h1>
             <p className="text-base-content">{error}</p>
             <div className="mt-8">
-              <Link href="/bookings" className="btn btn-primary">
+              <Link href="/trips" className="btn btn-primary">
                 Back to Bookings
               </Link>
             </div>
@@ -214,7 +214,7 @@ export default function InvoicePage() {
             <h1 className="text-2xl font-bold text-base-content mb-4">Invoice Not Found</h1>
             <p className="text-base-content/70">The requested invoice could not be found.</p>
             <div className="mt-8">
-              <Link href="/bookings" className="btn btn-primary">
+              <Link href="/trips" className="btn btn-primary">
                 Back to Bookings
               </Link>
             </div>
@@ -426,8 +426,8 @@ export default function InvoicePage() {
             
             {/* Actions */}
             <div className="mt-8 flex justify-between">
-              <Link href="/bookings" className="btn btn-ghost">
-                Back to Bookings
+              <Link href="/trips" className="btn btn-ghost">
+                Back to My Trips
               </Link>
             </div>
           </div>
