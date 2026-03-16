@@ -1,6 +1,6 @@
 /* Created with assistance from Claude 3.7 Sonnet */
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import Navbar from '@/components/Navbar';
@@ -44,7 +44,7 @@ interface FlightBookingResponse {
     error?: string;
   }
 
-export default function CheckoutPage() {
+function CheckoutPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -494,5 +494,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense>
+      <CheckoutPageInner />
+    </Suspense>
   );
 }

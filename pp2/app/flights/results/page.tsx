@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../../contexts/auth-context";
@@ -196,7 +196,7 @@ const FlightCard: React.FC<{
 // --------------------
 // Main Component: FlightResultsPage
 // --------------------
-export default function FlightResultsPage() {
+function FlightResultsPageInner() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -653,5 +653,13 @@ export default function FlightResultsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function FlightResultsPage() {
+  return (
+    <Suspense>
+      <FlightResultsPageInner />
+    </Suspense>
   );
 }

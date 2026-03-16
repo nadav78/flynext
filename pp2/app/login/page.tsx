@@ -1,12 +1,12 @@
 /* created with assistance from Claude 3.7 Sonnet */ 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Login() {
+function LoginInner() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -59,13 +59,13 @@ export default function Login() {
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
           Sign in to your account
         </h2>
-        
+
         {error && (
           <div className="mt-4 p-3 bg-red-100 text-red-800 rounded-md">
             {error}
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="-space-y-px rounded-md shadow-sm">
             <div>
@@ -104,7 +104,7 @@ export default function Login() {
               Sign in
             </button>
           </div>
-          
+
           <div className="flex items-center justify-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
@@ -116,5 +116,13 @@ export default function Login() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense>
+      <LoginInner />
+    </Suspense>
   );
 }

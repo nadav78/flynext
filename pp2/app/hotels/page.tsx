@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
@@ -24,7 +24,7 @@ type Hotel = {
   HotelRoomType: HotelRoomType[];
 };
 
-export default function Hotels() {
+function HotelsInner() {
     const { user } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -434,7 +434,7 @@ export default function Hotels() {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-base-100 p-6 rounded-lg shadow-xl max-w-md w-full">
                             <h3 className="text-lg font-bold mb-4">Select Room Type</h3>
-                            
+
                             {reservationError && (
                                 <div className="alert alert-error mb-4">
                                     <div className="flex-1">
@@ -442,11 +442,11 @@ export default function Hotels() {
                                     </div>
                                 </div>
                             )}
-                            
+
                             <div className="space-y-2 mb-4">
                                 {hotels.find(h => h.id === reservingHotelId)?.HotelRoomType.map(roomType => (
-                                    <div 
-                                        key={roomType.id} 
+                                    <div
+                                        key={roomType.id}
                                         className={`border p-3 rounded cursor-pointer ${selectedRoomTypeId === roomType.id ? 'border-primary bg-base-200' : ''}`}
                                         onClick={() => setSelectedRoomTypeId(roomType.id)}
                                     >
@@ -460,9 +460,9 @@ export default function Hotels() {
                                     </div>
                                 ))}
                             </div>
-                            
+
                             <div className="flex justify-end space-x-2">
-                                <button 
+                                <button
                                     className="btn btn-outline"
                                     onClick={closeModal}
                                 >
@@ -482,4 +482,12 @@ export default function Hotels() {
             </div>
         </main>
     );
+}
+
+export default function Hotels() {
+  return (
+    <Suspense>
+      <HotelsInner />
+    </Suspense>
+  );
 }
