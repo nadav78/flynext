@@ -112,7 +112,7 @@ const Navbar: React.FC = () => {
               >
                 <li><Link href="/flights">Flights</Link></li>
                 <li><Link href="/hotels">Hotels</Link></li>
-                <li><Link href="/bookings">Bookings</Link></li>
+                <li><Link href="/trips">My Trips</Link></li>
                 <li><Link href="/manage-hotels">Manage Hotels</Link></li>
               </ul>
             </div>
@@ -125,7 +125,7 @@ const Navbar: React.FC = () => {
             <ul className="menu menu-horizontal p-0">
               <li><Link href="/flights">Flights</Link></li>
               <li><Link href="/hotels">Hotels</Link></li>
-              <li><Link href="/bookings">Bookings</Link></li>
+              <li><Link href="/trips">My Trips</Link></li>
               <li><Link href="/manage-hotels">Manage Hotels</Link></li>
             </ul>
           </div>
