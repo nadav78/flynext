@@ -69,13 +69,13 @@ export default function TripsPage() {
                           Flight ref: <span className="font-mono">{trip.bookingReference}</span>
                         </p>
                       )}
-                      {trip.hotels.map((h, i) => (
-                        <p key={i} className={`text-sm ${h.cancelled ? 'line-through text-base-content/40' : ''}`}>
+                      {trip.hotels.filter(h => !h.cancelled).map((h, i) => (
+                        <p key={i} className="text-sm">
                           {h.hotelName} — {h.roomType} ({new Date(h.checkIn).toLocaleDateString()} → {new Date(h.checkOut).toLocaleDateString()})
                         </p>
                       ))}
-                      {!trip.hasFlights && trip.hotels.length === 0 && (
-                        <p className="text-sm text-base-content/50">No bookings</p>
+                      {!trip.hasFlights && trip.hotels.every(h => h.cancelled) && (
+                        <p className="text-sm text-base-content/50">All reservations cancelled</p>
                       )}
                     </div>
                     <div className="text-right">
