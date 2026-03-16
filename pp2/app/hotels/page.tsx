@@ -196,144 +196,51 @@ export default function Hotels() {
         }
     };
 
-    // Function to actually make the reservation API call
-    const makeReservation = async (hotelId: number, roomTypeId: number) => {
+    // Save hotel selection to localStorage so checkout can complete the booking
+    const makeReservation = (hotelId: number, roomTypeId: number) => {
         if (!checkin || !checkout) {
             setReservationError('Check-in and check-out dates are required');
             return;
         }
 
-        setReservationLoading(true);
-        setReservationError(null);
-        
-        try {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                throw new Error('Authentication required');
-            }
-            
-            // Format dates for API
-            const checkInDate = new Date(checkin);
-            const checkOutDate = new Date(checkout);
-            
-            const response = await fetch('/api/hotels/reserve', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    hotel_id: hotelId,
-                    room_type_id: roomTypeId,
-                    check_in_time: checkInDate.toISOString(),
-                    check_out_time: checkOutDate.toISOString()
-                })
-            });
-            
-            if (response.status === 401) {
-                // Try to refresh the token if unauthorized
-                const refreshed = await refreshAccessToken();
-                if (refreshed) {
-                    // Retry with new token
-                    const newToken = localStorage.getItem('accessToken');
-                    const retryResponse = await fetch('/api/hotels/reserve', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${newToken}`
-                        },
-                        body: JSON.stringify({
-                            hotel_id: hotelId,
-                            room_type_id: roomTypeId,
-                            check_in_time: checkInDate.toISOString(),
-                            check_out_time: checkOutDate.toISOString()
-                        })
-                    });
-                    
-                    if (response.ok || retryResponse?.ok) {
-                        const reservationData = response.ok 
-                            ? await response.json() 
-                            : await retryResponse.json();
-                        
-                        handleReservationSuccess(reservationData);
-                        return;
+        const selectedHotel = hotels.find(h => h.id === hotelId);
+        const selectedRoomType = selectedHotel?.HotelRoomType.find(r => r.id === roomTypeId);
 
-                    } else {
-                        const errorData = await retryResponse.json();
-                        throw new Error(errorData.error || 'Failed to create reservation');
-                    }
-                }
-                
-                // If refresh failed, redirect to login
-                alert('Your session has expired. Please log in again.');
-                router.push('/login');
-                return;
-            }
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to create reservation');
-            }
-            
-            // Get the response data
-            const reservationData = await response.json();
-            
-            // Handle successful reservation
-            handleReservationSuccess(reservationData);
-            
-        } catch (error: any) {
-            setReservationError(error.message || 'Failed to make reservation');
-            console.error('Reservation error:', error);
-        } finally {
-            setReservationLoading(false);
-            setReservingHotelId(null);
+        if (!selectedHotel || !selectedRoomType) {
+            setReservationError('Could not find selected hotel or room');
+            return;
         }
+
+        const checkInDate = new Date(checkin);
+        const checkOutDate = new Date(checkout);
+        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 3600 * 24));
+        const totalPrice = selectedRoomType.price_per_night * nights;
+
+        const hotelBooking = {
+            hotelId: selectedHotel.id.toString(),
+            name: selectedHotel.name,
+            roomType: selectedRoomType.name,
+            roomTypeId: selectedRoomType.id.toString(),
+            checkIn: checkInDate.toISOString(),
+            checkOut: checkOutDate.toISOString(),
+            price: totalPrice,
+        };
+
+        localStorage.setItem('selectedHotel', JSON.stringify(hotelBooking));
+        handleReservationSuccess(hotelBooking);
     };
     
-    // Function to handle successful reservation
-    const handleReservationSuccess = (reservation: any) => {
+    // Function to handle successful room selection
+    const handleReservationSuccess = (hotelBooking: any) => {
         setReservationSuccess(true);
         setReservingHotelId(null);
-        
-        if (reservation) {
-            // Find the selected hotel and room type
-            const selectedHotel = hotels.find(h => h.id === reservation.hotelId);
-            const selectedRoomType = selectedHotel?.HotelRoomType.find(r => r.id === reservation.hotelRoomTypeId);
-            
-            if (selectedHotel && selectedRoomType) {
-                // Calculate the number of nights
-                const checkInDate = new Date(checkin);
-                const checkOutDate = new Date(checkout);
-                const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 3600 * 24));
-                const totalPrice = selectedRoomType.price_per_night * nights;
-                
-                const hotelBooking = {
-                    id: reservation.id.toString(),
-                    hotelId: selectedHotel.id.toString(),   // Add hotel ID
-                    name: selectedHotel.name,
-                    roomType: selectedRoomType.name,
-                    roomTypeId: selectedRoomType.id.toString(),
-                    checkIn: checkInDate.toISOString(),
-                    checkOut: checkOutDate.toISOString(),
-                    price: totalPrice
-                };
-                
-                localStorage.setItem('selectedHotel', JSON.stringify(hotelBooking));
-                
-                // Ask user if they want to proceed to checkout
-                const proceedToCheckout = confirm("Reservation successful! Would you like to proceed to checkout?");
-                if (proceedToCheckout) {
-                    router.push('/checkout');
-                }
-            }
+
+        const proceedToCheckout = confirm("Room selected! Would you like to proceed to checkout?");
+        if (proceedToCheckout) {
+            router.push('/checkout');
         }
-        // Show success message and clear it after a few seconds
-        setTimeout(() => {
-            setReservationSuccess(false);
-        }, 5000);
-        
-        // Optionally redirect to reservations page
-        // router.push('/reservations');
+
+        setTimeout(() => setReservationSuccess(false), 5000);
     };
 
     // Function to close modal
@@ -561,12 +468,12 @@ export default function Hotels() {
                                 >
                                     Cancel
                                 </button>
-                                <button 
-                                    className={`btn btn-primary ${reservationLoading ? 'loading' : ''}`}
-                                    disabled={!selectedRoomTypeId || reservationLoading}
+                                <button
+                                    className="btn btn-primary"
+                                    disabled={!selectedRoomTypeId}
                                     onClick={() => selectedRoomTypeId && reservingHotelId && makeReservation(reservingHotelId, selectedRoomTypeId)}
                                 >
-                                    {reservationLoading ? 'Processing...' : 'Confirm Reservation'}
+                                    Select Room
                                 </button>
                             </div>
                         </div>
