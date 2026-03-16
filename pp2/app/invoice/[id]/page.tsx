@@ -284,21 +284,21 @@ export default function InvoicePage() {
               </div>
             </div>
             
-            {/* Booking Reference */}
-            <div className="mb-8 p-4 bg-base-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-base-content/70">Booking Reference</p>
-                  <p className="font-semibold text-lg">{invoice.bookingReference}</p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  {invoice.ticketNumber && invoice.ticketNumber !== 'N/A' && (
-                    <div className="text-right">
-                      <p className="text-sm text-base-content/70">Ticket Number</p>
-                      <p className="font-semibold">{invoice.ticketNumber}</p>
-                    </div>
-                  )}
-                  {invoice.bookingReference && invoice.bookingReference !== 'N/A' && (
+            {/* Booking Reference — only shown for flight bookings */}
+            {invoice.bookingReference && invoice.bookingReference !== 'N/A' && (
+              <div className="mb-8 p-4 bg-base-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-base-content/70">Booking Reference</p>
+                    <p className="font-semibold text-lg">{invoice.bookingReference}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    {invoice.ticketNumber && invoice.ticketNumber !== 'N/A' && (
+                      <div className="text-right">
+                        <p className="text-sm text-base-content/70">Ticket Number</p>
+                        <p className="font-semibold">{invoice.ticketNumber}</p>
+                      </div>
+                    )}
                     <button
                       onClick={cancelFlight}
                       disabled={cancellingFlight}
@@ -306,10 +306,10 @@ export default function InvoicePage() {
                     >
                       {cancellingFlight ? 'Cancelling...' : 'Cancel Flight'}
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             
             {/* Flight Information */}
             {invoice.flights && invoice.flights.length > 0 && (
